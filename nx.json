@@ -1,0 +1,22 @@
+{
+  "extends": "@nrwl/workspace/presets/npm.json",
+  "npmScope": "inova",
+  "affected": {
+    "defaultBase": "master"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ],
+        "accessToken": "YjkyOGI0YWUtMjA5Mi00NDg0LThhYTYtNzVkZDc0NzE2M2NjfHJlYWQtd3JpdGU="
+      }
+    }
+  },
+  "projects": {}
+}
