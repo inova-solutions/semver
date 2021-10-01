@@ -5,8 +5,11 @@
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
@@ -14,7 +17,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@inova/semver": ["packages/semver/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

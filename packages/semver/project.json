@@ -1,0 +1,33 @@
+{
+  "root": "packages/semver",
+  "sourceRoot": "packages/semver",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/workspace:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/semver",
+        "main": "packages/semver/cli/semver.ts",
+        "tsConfig": "packages/semver/tsconfig.lib.json",
+        "assets": ["packages/semver/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/semver/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/semver"],
+      "options": {
+        "jestConfig": "packages/semver/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
