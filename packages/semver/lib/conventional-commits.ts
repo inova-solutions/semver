@@ -11,13 +11,16 @@ import { Channel } from './semver-helpers';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
 type Options = BumpOptions & { channel: Channel };
+type ReleaseType = Callback.Recommendation.ReleaseType;
 
 /**
  * Get a recommended version bump based on conventional commits.
  * @param options Options
  * @returns Bump type, major, minor, patch.
  */
-export async function conventionalRecommendedBump(options: Options): Promise<Callback.Recommendation.ReleaseType> {
+export async function conventionalRecommendedBump(
+  options: Options
+): Promise<{ releaseType: ReleaseType; reason: string }> {
   const presetPackage = loadPrestLoader(options.preset);
   const config = await presetResolver(presetPackage);
 
@@ -48,7 +51,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
   // `parserOpts` object and remove `recommendedBumpOpts.parserOpts` from each preset package if it exists.
   const parserOpts = config.recommendedBumpOpts?.parserOpts ? config.recommendedBumpOpts.parserOpts : config.parserOpts;
 
-  return new Promise<Callback.Recommendation.ReleaseType>((resolve, reject) => {
+  return new Promise<{ releaseType: ReleaseType; reason: string }>((resolve, reject) => {
     try {
       gitRawCommits({
         format: '%B%n-hash-%n%H',
@@ -73,7 +76,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
               level = VERSIONS[result.level];
             }
 
-            resolve(level);
+            resolve({ releaseType: level, reason: result.reason });
           })
         );
     } catch (error) {

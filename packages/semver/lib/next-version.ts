@@ -23,7 +23,9 @@ export async function nextVersion(config: Config, options: { tagPrefix?: string;
   debug(options.debug, `current version: ${chalk.blueBright.bold(lastTag)}`);
   debug(options.debug, `last release: ${chalk.blueBright.bold(lastReleaseTag)}`);
 
-  return increment(lastTag, lastReleaseTag, recommendedBump, channel);
+  console.log(`summary: ${chalk.blueBright.bold(recommendedBump.reason)}`);
+
+  return increment(lastTag, lastReleaseTag, recommendedBump.releaseType, channel);
 }
 
 async function lastSemverTag(options: { channel: Channel }): Promise<string> {

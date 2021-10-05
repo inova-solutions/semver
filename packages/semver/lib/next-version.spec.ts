@@ -3,10 +3,13 @@ import { nextVersion } from './next-version';
 import { Config, getConfig } from './config';
 
 describe('nextVersion in main, no release branch exists', () => {
-
-   // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
-  afterEach(() => jest.resetAllMocks());
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
   it('no commits since last release', async () => {
     // arrange
     const config = await getConfig();
@@ -76,7 +79,12 @@ describe('nextVersion in main, no release branch exists', () => {
 });
 
 describe('nextVersion in main, the first release branch is in rc mode', () => {
-  afterEach(() => jest.resetAllMocks());
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
 
   it('patch should be 1.0.1-beta.1, after rc build 1.0.0-rc.1', async () => {
     // arrange
@@ -193,7 +201,12 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
 });
 
 describe('nextVersion in main, the first release branch is in stable mode', () => {
-  afterEach(() => jest.resetAllMocks());
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
 
   it('patch should be 1.0.1-beta.1, after stable build 1.0.0', async () => {
     // arrange
@@ -321,7 +334,12 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
 });
 
 describe('nextVersion in release, rc mode is enabled', () => {
-  afterEach(() => jest.resetAllMocks());
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
 
   it('first version should be 1.0.0-rc.1', async () => {
     // arrange
@@ -411,7 +429,12 @@ describe('nextVersion in release, rc mode is enabled', () => {
 });
 
 describe('nextVersion in release, stable mode is enabled', () => {
-  afterEach(() => jest.resetAllMocks());
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
 
   it('first version should be 1.0.0', async () => {
     // arrange
