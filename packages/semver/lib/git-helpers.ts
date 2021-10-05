@@ -1,11 +1,11 @@
 import * as findVersions from 'find-versions';
 import * as _gitSemverTags from 'git-semver-tags';
 import { exec } from 'child_process';
-import { valid as validSemver, sort as sortSemver, prerelease } from 'semver';
+import { valid as validSemver, sort as sortSemver, prerelease, SemVer } from 'semver';
 import { CONFIG_FILE, isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './semver-helpers';
 
-export type SemverTagOptions = Pick<_gitSemverTags.Options, 'skipUnstable' | 'tagPrefix'> & { channel?: Channel };
+export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
 
 /**
  * Gets name of the current branch.
@@ -72,7 +72,7 @@ export async function getBranchRelatedTags(options: SemverTagOptions): Promise<s
   return new Promise<string[]>((resolve, reject) => {
     _gitSemverTags(options, (error, tags) => {
       if (error) reject(error);
-      resolve(tags.filter((v) => !options.channel || v.includes(options.channel)));
+      resolve(filterByChannel(tags, options.channel));
     });
   });
 }
@@ -94,14 +94,11 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
-  return sortSemver(
-    result
-      .split('\n')
-      .map((tag) => validSemver(tag))
-      .filter((v) => !!v)
-      .filter((v) => (!isPrerelease(v) && options.skipUnstable) || !options.skipUnstable)
-      .filter((v) => !options.channel || v.includes(options.channel))
-  ).reverse();
+  const tags = result
+    .split('\n')
+    .map((tag) => validSemver(tag))
+    .filter((v) => !!v);
+  return sortSemver(filterByChannel(tags, options.channel)).reverse();
 }
 
 async function getBranchHeadDetached(): Promise<string> {
@@ -122,6 +119,12 @@ async function getBranchHeadDetached(): Promise<string> {
   });
 }
 
-function isPrerelease(version: string) {
-  return prerelease(version) !== null;
+function filterByChannel(tags: string[], channel: Channel): string[] {
+  if (channel) {
+    return tags
+      .map((t) => new SemVer(t))
+      .filter((v) => (channel === 'stable' && !v.prerelease?.length) || v.prerelease?.includes(channel))
+      .map((v) => v.version);
+  }
+  return tags;
 }

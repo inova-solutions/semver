@@ -4,11 +4,13 @@ import * as conventionalCommitsFilter from 'conventional-commits-filter';
 import * as gitRawCommits from 'git-raw-commits';
 import * as concat from 'concat-stream';
 import chalk from 'chalk';
-import { Callback, Options } from 'conventional-recommended-bump';
+import { Callback, Options as BumpOptions } from 'conventional-recommended-bump';
 import { presetResolver, PresetResolverResult } from './preset-resolver';
 import { lastSemverTag } from './git-helpers';
+import { Channel } from './semver-helpers';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
+type Options = BumpOptions & { channel: Channel };
 
 /**
  * Get a recommended version bump based on conventional commits.
@@ -22,7 +24,7 @@ export async function conventionalRecommendedBump(options: Options): Promise<Cal
   return await whatBump(options, config);
 }
 
-function loadPrestLoader(preset:string) {
+function loadPrestLoader(preset: string) {
   try {
     return conventionalChangelogPresetLoader(preset);
   } catch (error) {
@@ -33,7 +35,7 @@ function loadPrestLoader(preset:string) {
 }
 
 async function whatBump(options: Options, config: PresetResolverResult) {
-  const tag = await lastSemverTag({});
+  const tag = await lastSemverTag({ channel: options.channel });
   const _whatBump = options.whatBump || config.recommendedBumpOpts?.whatBump;
 
   if (typeof _whatBump !== 'function') {
@@ -44,9 +46,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
   // efforts created a `parserOpts` object under the `recommendedBumpOpts` object in each preset package.
   // In the future we want to merge differences found in `recommendedBumpOpts.parserOpts` into the top-level
   // `parserOpts` object and remove `recommendedBumpOpts.parserOpts` from each preset package if it exists.
-  const parserOpts = config.recommendedBumpOpts?.parserOpts
-    ? config.recommendedBumpOpts.parserOpts
-    : config.parserOpts;
+  const parserOpts = config.recommendedBumpOpts?.parserOpts ? config.recommendedBumpOpts.parserOpts : config.parserOpts;
 
   return new Promise<Callback.Recommendation.ReleaseType>((resolve, reject) => {
     try {

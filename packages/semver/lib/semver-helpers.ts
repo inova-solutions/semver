@@ -58,6 +58,9 @@ function incrementPrerelease(currentVersion: SemVer, lastRelease: SemVer, bump: 
 }
 
 function incrementRelease(currentVersion: SemVer, lastRelease: SemVer, bump: ReleaseType): string {
+  if (lastRelease.version === '0.0.0') {
+    return '1.0.0';
+  }
   const currentVersionIsPrerelease = currentVersion.prerelease?.length > 0;
   if (currentVersionIsPrerelease) return cutPrerelease(currentVersion).version;
 

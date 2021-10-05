@@ -12,6 +12,7 @@ export async function nextVersion(config: Config, options: { tagPrefix?: string;
   const recommendedBump = await conventionalRecommendedBump({
     tagPrefix: options.tagPrefix,
     preset: config.commitMessageFormat,
+    channel,
   });
 
   if (recommendedBump === undefined) return null;
@@ -36,7 +37,7 @@ async function lastSemverReleaseTag(options: { channel: Channel }): Promise<stri
   if (options.channel === 'beta') {
     return (await getAllTags({})).filter((v) => !v.includes(options.channel))[0];
   }
-  return (await getAllTags({ skipUnstable: true }))[0];
+  return (await getAllTags({ channel: 'stable' }))[0];
 }
 
 function debug(enabled: boolean, text: string): void {
