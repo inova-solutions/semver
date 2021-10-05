@@ -17,29 +17,30 @@ export async function nextVersion(config: Config, options: { tagPrefix?: string;
 
   if (recommendedBump === undefined) return null;
 
-  const lastTag = await lastSemverTag({ channel });
-  const lastReleaseTag = await lastSemverReleaseTag({ channel });
+  const lastTag = await lastSemverTag({ channel, tagPrefix: options.tagPrefix });
+  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix: options.tagPrefix });
 
   debug(options.debug, `current version: ${chalk.blueBright.bold(lastTag)}`);
   debug(options.debug, `last release: ${chalk.blueBright.bold(lastReleaseTag)}`);
 
   console.log(`summary: ${chalk.blueBright.bold(recommendedBump.reason)}`);
 
-  return increment(lastTag, lastReleaseTag, recommendedBump.releaseType, channel);
+  const incrementedVersion = increment(lastTag, lastReleaseTag, recommendedBump.releaseType, channel);
+  return options.tagPrefix ? `${options.tagPrefix}${incrementedVersion}` : incrementedVersion;
 }
 
-async function lastSemverTag(options: { channel: Channel }): Promise<string> {
+async function lastSemverTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
   if (options.channel === 'beta' || options.channel === 'rc') {
     return await _lastSemverTag(options);
   }
-  return await _lastSemverTag({});
+  return await _lastSemverTag({ tagPrefix: options.tagPrefix });
 }
 
-async function lastSemverReleaseTag(options: { channel: Channel }): Promise<string> {
+async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
   if (options.channel === 'beta') {
-    return (await getAllTags({})).filter((v) => !v.includes(options.channel))[0];
+    return (await getAllTags({ tagPrefix: options.tagPrefix })).filter((v) => !v.includes(options.channel))[0];
   }
-  return (await getAllTags({ channel: 'stable' }))[0];
+  return (await getAllTags({ channel: 'stable', tagPrefix: options.tagPrefix }))[0];
 }
 
 function debug(enabled: boolean, text: string): void {

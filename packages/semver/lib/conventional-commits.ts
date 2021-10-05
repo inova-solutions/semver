@@ -38,7 +38,7 @@ function loadPrestLoader(preset: string) {
 }
 
 async function whatBump(options: Options, config: PresetResolverResult) {
-  const tag = await lastSemverTag({ channel: options.channel });
+  const tag = await lastSemverTag({ channel: options.channel, tagPrefix: options.tagPrefix });
   const _whatBump = options.whatBump || config.recommendedBumpOpts?.whatBump;
 
   if (typeof _whatBump !== 'function') {
@@ -55,7 +55,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
     try {
       gitRawCommits({
         format: '%B%n-hash-%n%H',
-        from: tag,
+        from: options.tagPrefix ? `${options.tagPrefix}${tag}` : tag,
         path: options.path,
       })
         .pipe(conventionalCommitsParser(parserOpts))

@@ -72,7 +72,10 @@ export async function getBranchRelatedTags(options: SemverTagOptions): Promise<s
   return new Promise<string[]>((resolve, reject) => {
     _gitSemverTags(options, (error, tags) => {
       if (error) reject(error);
-      resolve(filterByChannel(tags, options.channel));
+      const filteredByPrefix = tags
+        .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
+        .map((tag) => (options.tagPrefix ? tag.replace(options.tagPrefix, '') : tag));
+      resolve(filterByChannel(filteredByPrefix, options.channel));
     });
   });
 }
@@ -94,8 +97,7 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
-  const tags = result
-    .split('\n')
+  const tags = filterByPrefix(result.split('\n'), options.tagPrefix)
     .map((tag) => validSemver(tag))
     .filter((v) => !!v);
   return sortSemver(filterByChannel(tags, options.channel)).reverse();
@@ -127,4 +129,10 @@ function filterByChannel(tags: string[], channel: Channel): string[] {
       .map((v) => v.version);
   }
   return tags;
+}
+
+function filterByPrefix(tags: string[], tagPrefix: string): string[] {
+  return tags
+    .filter((tag) => !tagPrefix || (tagPrefix && tag.startsWith(tagPrefix)))
+    .map((tag) => (tagPrefix ? tag.replace(tagPrefix, '') : tag));
 }

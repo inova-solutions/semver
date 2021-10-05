@@ -499,6 +499,67 @@ describe('nextVersion in release, stable mode is enabled', () => {
   });
 });
 
+describe('nextVersion in main, with tagPrefix', () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it('second feature, should tag with v1.0.0-beta.2', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat: first feat', 'v1.0.0-beta.1', cwd);
+    await gitCommits(['feat: second feat'], { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, { tagPrefix: 'v' });
+
+    // assert
+    expect(version).toEqual('v1.0.0-beta.2');
+  });
+
+  it('breaking change, should tag with v1.0.0-beta.2', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat: first feat', 'v1.0.0-beta.1', cwd);
+    await gitCommits(
+      [
+        `feat: breaking change feature
+    BREAKING CHANGE: oh-no`,
+      ],
+      { cwd }
+    );
+
+    // act
+    const version = await testNextVersion(cwd, config, {tagPrefix: 'v'});
+
+    // assert
+    expect(version).toEqual('v1.0.0-beta.2');
+  });
+
+  it('multiple prefixes works', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat(app1): first feat', 'app1/1.0.0-beta.1', cwd);
+    await commitAndTag('feat(app2): first feat', 'app2/1.0.0-beta.1', cwd);
+    await gitCommits(['feat(app1): second feat for first app'], { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, { tagPrefix: 'app1/' });
+
+    // assert
+    expect(version).toEqual('app1/1.0.0-beta.2');
+  });
+});
+
 async function testNextVersion(cwd: string, config: Config, options: { tagPrefix?: string; debug?: boolean }) {
   const currentCwd = process.cwd();
   try {
