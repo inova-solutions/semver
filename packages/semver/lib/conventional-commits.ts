@@ -69,7 +69,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
             const result = _whatBump(commits);
             let level: Callback.Recommendation.ReleaseType;
 
-            if (result?.level) {
+            if (result?.level >= 0) {
               level = VERSIONS[result.level];
             }
 

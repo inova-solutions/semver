@@ -18,6 +18,7 @@
     "@types/conventional-recommended-bump": "^6.1.0",
     "@types/figlet": "^1.5.4",
     "@types/git-semver-tags": "^4.1.1",
-    "@types/semver": "^7.3.5"
+    "@types/semver": "^7.3.5",
+    "execa": "^5.1.1"
   }
 }

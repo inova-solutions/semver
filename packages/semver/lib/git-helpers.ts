@@ -5,7 +5,7 @@ import { valid as validSemver, sort as sortSemver, prerelease } from 'semver';
 import { CONFIG_FILE, isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './semver-helpers';
 
-type SemverTagOptions = Pick<_gitSemverTags.Options, 'skipUnstable'> & { channel?: Channel };
+export type SemverTagOptions = Pick<_gitSemverTags.Options, 'skipUnstable' | 'tagPrefix'> & { channel?: Channel };
 
 /**
  * Gets name of the current branch.

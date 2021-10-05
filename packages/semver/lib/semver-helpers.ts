@@ -14,7 +14,7 @@ type ReleaseType = Bump.Recommendation.ReleaseType;
  */
 export function increment(version: string, lastRelease: string, bump: ReleaseType, channel: Channel): string {
   if (!version && !lastRelease) {
-    return channel === 'stable' ? '0.0.1' : `0.0.1-${channel}.1`;
+    return channel === 'stable' ? '1.0.0' : `1.0.0-${channel}.1`;
   }
   lastRelease = !lastRelease ? '0.0.0' : lastRelease;
 
@@ -37,19 +37,19 @@ export function increment(version: string, lastRelease: string, bump: ReleaseTyp
 
 function incrementPrerelease(currentVersion: SemVer, lastRelease: SemVer, bump: ReleaseType, channel: Channel): string {
   // get the higher version
-  const lastVersion = gtSemver(currentVersion, lastRelease, { includePrerelease: true }) ? currentVersion : lastRelease;
-  const lastVersionIsPrerelease = lastVersion.prerelease[0] === channel;
+  const lastTag = gtSemver(currentVersion, lastRelease, { includePrerelease: true }) ? currentVersion : lastRelease;
+  const lastVersionIsPrerelease = lastTag.prerelease[0] === channel;
   const noStableRelease = eqSemver(lastRelease, '0.0.0');
 
-  if (channel === 'rc' && noStableRelease) {
-    return incSemver(lastVersion, 'prerelease');
+  if (lastVersionIsPrerelease && noStableRelease) {
+    return incSemver(lastTag, 'prerelease');
   }
 
   // bump from beta
   if (lastVersionIsPrerelease) {
-    return currentVersion[bump] === lastRelease[bump]
+    return currentVersion[bump] === lastRelease[bump] && lastRelease.major >= currentVersion.major
       ? `${incSemver(currentVersion, bump)}-${channel}.1`
-      : incSemver(lastVersion, 'prerelease');
+      : incSemver(lastTag, 'prerelease');
   }
 
   // bump from release or rc
