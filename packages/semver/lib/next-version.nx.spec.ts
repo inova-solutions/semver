@@ -21,11 +21,6 @@ describe('nextVersion in main, for nx workspace', () => {
     // arrange
     const config = await getConfig();
     const cwd = workspacePath;
-
-    // await commitAndTag('feat: a global feat', '1.0.0-beta.3', cwd);
-    // await gitCommitFile('apps/first-app/README.md', 'fix(first-app): second feat', { cwd });
-    // await gitCommitFile('apps/second-app/README.md', 'feat(second-app): second feat', { cwd });
-
     // act
     const version = await testNextVersion(cwd, config, {
       workspace: 'nx',
@@ -73,7 +68,6 @@ async function testNextVersion(cwd: string, config: Config, options: NextVersion
 
 async function initWorkspace() {
   workspacePath = await createWorkspace('inova');
-  console.warn(workspacePath);
   await generateLibrary('lib-a', workspacePath);
   await generateLibrary('lib-b', workspacePath);
   await generateLibrary('lib-c', workspacePath);

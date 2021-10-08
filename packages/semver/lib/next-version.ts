@@ -14,13 +14,20 @@ export interface NextVersionOptions {
   bump?: ReleaseType;
 }
 
+/**
+ * Determine the next version for your repo or your packages in your repo, depending on your workspace type.
+ * The workspace type can be defined via the `workspace` option.
+ * @param config The semver configuration from `.semver.json`.
+ * @param options The options.
+ * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
+ */
 export async function nextVersion(config: Config, options: NextVersionOptions): Promise<string[]> {
   const channel: Channel = (await isBetaBranch()) ? 'beta' : config.releaseCandidate ? 'rc' : 'stable';
   const tagPrefix = options.tagPrefix;
 
   debug(options.debug, `release channel: ${chalk.greenBright.bold(channel)}`);
 
-  let recommendedBump = { releaseType: options.bump, reason: '' };
+  let recommendedBump = { releaseType: options.bump, reason: undefined };
   if (!recommendedBump.releaseType) {
     recommendedBump = await conventionalRecommendedBump({
       preset: config.commitMessageFormat,

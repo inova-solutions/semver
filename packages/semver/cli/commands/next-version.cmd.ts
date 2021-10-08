@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { nextVersion, getConfig } from '../../lib';
+import { nextVersion, getConfig, NextVersionOptions } from '../../lib';
 
 /**
  * Adds a subcommand to the program for emitting the next version.
@@ -9,15 +9,18 @@ import { nextVersion, getConfig } from '../../lib';
 export function addNextVersionCmd(program: Command) {
   program
     .command('next-version')
-    .description('show the version for the pending release')
-    .option('-p, --prefix <prefix>', 'specify a prefix for the git tag to be ignored from the semver checks')
+    .description('Show the version for the pending release')
+    .option('-w, --workspace <repoType>', 'Specify your repo type. Ignore this option if you have only one project in your repo. Or pass "nx" if you are using nx workspace')
+    .option('-p, --tagPrefix <prefix>', 'Specify a prefix for the git tag to be ignored from the semver checks')
+    .option('-b, --bump <bumpType>', 'You can pass "major", "minor" or "patch" if you want override the recommended bump by conventional commit analyzer')
+    .option('--path <path>', 'Specify the path to only calculate with git commits related to the path')
     .option('-d, --debug', 'Output debugging information')
     .action(handleCommand);
 }
 
-async function handleCommand(options: { prefix: string }) {
+async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
 
-  const version = await nextVersion(config, { tagPrefix: options.prefix });
-  console.log(`next version: ${chalk.greenBright.bold(version)}`);
+  const version = await nextVersion(config, options);
+  console.log(`next version(s): ${chalk.greenBright.bold(version.join(', '))}`);
 }
