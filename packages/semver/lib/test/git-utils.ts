@@ -1,5 +1,7 @@
 // copy of: https://github.com/semantic-release/semantic-release/blob/master/test/helpers/git-utils.js
 import * as execa from 'execa';
+import { dirname, join } from 'path';
+import { mkdirSync, writeFileSync } from 'fs';
 import { tempDir, fileUrl } from './path-utils';
 
 /**
@@ -8,7 +10,7 @@ import { tempDir, fileUrl } from './path-utils';
  * @param branch Initial branch name.
  * @returns
  */
-export async function initGit(withRemote: boolean, branch:string) {
+export async function initGit(withRemote: boolean, branch: string) {
   const cwd = tempDir();
   const args = withRemote ? ['--bare', `--initial-branch=${branch}`] : [`--initial-branch=${branch}`];
 
@@ -56,13 +58,12 @@ export async function gitTagVersion(tagName: string, sha: string, execaOptions: 
   await execa('git', sha ? ['tag', '-f', tagName, sha] : ['tag', tagName], execaOptions);
 }
 
-
 /**
  * Create commits on the current git repository.
  * @param messages Commit messages
  * @param execaOptions Options to pass to `execa`.
  */
- export async function gitCommits(messages: string[], execaOptions: execa.Options<string>) {
+export async function gitCommits(messages: string[], execaOptions: execa.Options<string>) {
   await Promise.all(
     messages.map(
       async (message) =>
@@ -74,12 +75,28 @@ export async function gitTagVersion(tagName: string, sha: string, execaOptions: 
 }
 
 /**
+ * Create a commit with a real file.
+ * @param fileName Filename to create for a commit e.g. `apps/demo-app/README:md`
+ * @param message Commit message.
+ * @param execaOptions Options to pass to `execa`.
+ */
+export async function gitCommitFile(fileName: string, message: string, execaOptions: execa.Options<string>) {
+  const dir = join(execaOptions.cwd, dirname(fileName));
+  const fullName = join(execaOptions.cwd, fileName);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(fullName, message, { encoding: 'utf-8' });
+
+  await execa('git', ['add', '.'], execaOptions);
+  await execa('git', ['commit', '-m', message], execaOptions);
+}
+
+/**
  *Checkout a branch on the current git repository.
  * @param branch Branch name.
  * @param action Create new branch or checkout an existing one.
  * @param execaOptions Options to pass to `execa`.
  */
- export async function gitCheckout(branch: string, action: 'create' | 'checkout', execaOptions: execa.Options<string>) {
+export async function gitCheckout(branch: string, action: 'create' | 'checkout', execaOptions: execa.Options<string>) {
   switch (action) {
     case 'create':
       await execa('git', ['checkout', '-b', branch], execaOptions);

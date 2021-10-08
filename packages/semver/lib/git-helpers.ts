@@ -1,7 +1,7 @@
 import * as findVersions from 'find-versions';
 import * as _gitSemverTags from 'git-semver-tags';
 import { exec } from 'child_process';
-import { valid as validSemver, sort as sortSemver, prerelease, SemVer } from 'semver';
+import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { CONFIG_FILE, isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './semver-helpers';
 
@@ -16,7 +16,10 @@ export async function getCurrentBranch(): Promise<string> {
 
   return new Promise<string>((resolve, reject) => {
     exec(cmd, async (error, stdout) => {
-      if (error) reject(error);
+      if (error) {
+        reject(error);
+        return;
+      }
 
       let branch = stdout.toString().trim();
       if (branch) {
@@ -57,7 +60,10 @@ export async function getGitVersion(): Promise<string> {
 
   return new Promise<string>((resolve, reject) => {
     exec(cmd, (error, stdout) => {
-      if (error) reject(error);
+      if (error) {
+        reject(error);
+        return;
+      }
       resolve(findVersions(stdout)[0]);
     });
   });
@@ -71,7 +77,10 @@ export async function getGitVersion(): Promise<string> {
 export async function getBranchRelatedTags(options: SemverTagOptions): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
     _gitSemverTags(options, (error, tags) => {
-      if (error) reject(error);
+      if (error) {
+        reject(error);
+        return;
+      }
       const filteredByPrefix = tags
         .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
         .map((tag) => (options.tagPrefix ? tag.replace(options.tagPrefix, '') : tag));
@@ -90,7 +99,10 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
 
   return new Promise<string[]>((resolve, reject) => {
     exec(cmd, (error, stdout) => {
-      if (error) reject(error);
+      if (error) {
+        reject(error);
+        return;
+      }
       resolve(parseGitTagResult(stdout, options));
     });
   });

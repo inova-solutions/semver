@@ -11,7 +11,7 @@ import { Channel } from './semver-helpers';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
 type Options = BumpOptions & { channel: Channel };
-type ReleaseType = Callback.Recommendation.ReleaseType;
+export type ReleaseType = Callback.Recommendation.ReleaseType;
 
 /**
  * Get a recommended version bump based on conventional commits.
@@ -51,11 +51,12 @@ async function whatBump(options: Options, config: PresetResolverResult) {
   // `parserOpts` object and remove `recommendedBumpOpts.parserOpts` from each preset package if it exists.
   const parserOpts = config.recommendedBumpOpts?.parserOpts ? config.recommendedBumpOpts.parserOpts : config.parserOpts;
 
+  const from = tag ? (options.tagPrefix ? `${options.tagPrefix}${tag}` : tag) : undefined
   return new Promise<{ releaseType: ReleaseType; reason: string }>((resolve, reject) => {
     try {
       gitRawCommits({
         format: '%B%n-hash-%n%H',
-        from: options.tagPrefix ? `${options.tagPrefix}${tag}` : tag,
+        from: from,
         path: options.path,
       })
         .pipe(conventionalCommitsParser(parserOpts))

@@ -1,32 +1,76 @@
 import chalk from 'chalk';
+import { Task } from '@nrwl/devkit';
 import { Config, isBetaBranch } from './config';
-import { conventionalRecommendedBump } from './conventional-commits';
+import { conventionalRecommendedBump, ReleaseType } from './conventional-commits';
 import { getAllTags, lastSemverTag as _lastSemverTag } from './git-helpers';
 import { Channel, increment } from './semver-helpers';
+import { exec } from 'child_process';
 
-export async function nextVersion(config: Config, options: { tagPrefix?: string; debug?: boolean }): Promise<string> {
+export interface NextVersionOptions {
+  tagPrefix?: string;
+  path?: string;
+  debug?: boolean;
+  workspace?: 'nx';
+  bump?: ReleaseType;
+}
+
+export async function nextVersion(config: Config, options: NextVersionOptions): Promise<string[]> {
   const channel: Channel = (await isBetaBranch()) ? 'beta' : config.releaseCandidate ? 'rc' : 'stable';
+  const tagPrefix = options.tagPrefix;
 
   debug(options.debug, `release channel: ${chalk.greenBright.bold(channel)}`);
 
-  const recommendedBump = await conventionalRecommendedBump({
-    tagPrefix: options.tagPrefix,
-    preset: config.commitMessageFormat,
-    channel,
-  });
-
+  let recommendedBump = { releaseType: options.bump, reason: '' };
+  if (!recommendedBump.releaseType) {
+    recommendedBump = await conventionalRecommendedBump({
+      preset: config.commitMessageFormat,
+      path: options.path,
+      tagPrefix,
+      channel,
+    });
+  }
   if (recommendedBump === undefined) return null;
 
-  const lastTag = await lastSemverTag({ channel, tagPrefix: options.tagPrefix });
-  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix: options.tagPrefix });
+  const bump = recommendedBump.releaseType;
+  const lastTag = await lastSemverTag({ channel, tagPrefix });
+  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });
 
   debug(options.debug, `current version: ${chalk.blueBright.bold(lastTag)}`);
   debug(options.debug, `last release: ${chalk.blueBright.bold(lastReleaseTag)}`);
 
-  console.log(`summary: ${chalk.blueBright.bold(recommendedBump.reason)}`);
+  if (recommendedBump.reason) console.log(`summary: ${chalk.blueBright.bold(recommendedBump.reason)}`);
 
-  const incrementedVersion = increment(lastTag, lastReleaseTag, recommendedBump.releaseType, channel);
-  return options.tagPrefix ? `${options.tagPrefix}${incrementedVersion}` : incrementedVersion;
+  let packageTags: string[] = [];
+  if (options.workspace === 'nx') {
+    const projects = await nxAffectedProjects(lastTag);
+    packageTags = await Promise.all(
+      projects.map(async (p) => (await nextVersion(config, { debug: options.debug, tagPrefix: `${p}/`, bump }))[0])
+    );
+  }
+
+  const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel);
+  packageTags.push(tagPrefix ? `${tagPrefix}${incrementedVersion}` : incrementedVersion);
+  return packageTags;
+}
+
+async function nxAffectedProjects(base: string): Promise<string[]> {
+  const baseCmd = 'npx nx print-affected --target=build';
+  const cmd = base ? `${baseCmd} --base=${base} --head=HEAD` : `${baseCmd} --all`;
+
+  return new Promise<string[]>((resolve, reject) => {
+    exec(cmd, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      const tasks: Task[] = JSON.parse(stdout)?.tasks;
+      if (!tasks) {
+        reject('The command "nx print-affected" does not return the expected output');
+        return;
+      }
+      resolve(tasks.map((k) => k.target.project));
+    });
+  });
 }
 
 async function lastSemverTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
