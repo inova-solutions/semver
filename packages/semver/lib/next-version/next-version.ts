@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import { Task } from '@nrwl/devkit';
-import { Config, isBetaBranch } from './config';
-import { conventionalRecommendedBump, ReleaseType } from './conventional-commits';
-import { getAllTags, lastSemverTag as _lastSemverTag } from './git-helpers';
+import { Config, isBetaBranch } from '../config';
+import { conventionalRecommendedBump, ReleaseType } from '../conventional-changelog/conventional-commits';
+import { getAllTags, lastSemverTag as _lastSemverTag } from '../git-helpers';
 import { Channel, increment } from './semver-helpers';
 import { exec } from 'child_process';
-import { debug, info } from './logger';
+import { debug, info } from '../logger';
 
 export interface NextVersionOptions {
   tagPrefix?: string;

@@ -1,6 +1,6 @@
-import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile } from './test/git-utils';
+import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile } from '../test/git-utils';
 import { nextVersion, NextVersionOptions } from './next-version';
-import { Config, getConfig } from './config';
+import { Config, getConfig } from '../config';
 
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function

@@ -1,7 +1,7 @@
-import { gitTagVersion, gitCommitFile } from './test/git-utils';
+import { gitTagVersion, gitCommitFile } from '../test/git-utils';
 import { nextVersion, NextVersionOptions } from './next-version';
-import { Config, getConfig } from './config';
-import { createWorkspace, generateLibrary } from './test/nx-utils';
+import { Config, getConfig } from '../config';
+import { createWorkspace, generateLibrary } from '../test/nx-utils';
 
 let workspacePath;
 

@@ -1,3 +1,4 @@
+// Adapted from https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-recommended-bump
 import * as conventionalChangelogPresetLoader from 'conventional-changelog-preset-loader';
 import * as conventionalCommitsParser from 'conventional-commits-parser';
 import * as conventionalCommitsFilter from 'conventional-commits-filter';
@@ -6,9 +7,9 @@ import * as concat from 'concat-stream';
 import chalk from 'chalk';
 import { Callback, Options as BumpOptions } from 'conventional-recommended-bump';
 import { presetResolver, PresetResolverResult } from './preset-resolver';
-import { lastSemverTag } from './git-helpers';
-import { Channel } from './semver-helpers';
-import { debug, warn } from './logger';
+import { lastSemverTag } from '../git-helpers';
+import { Channel } from '../next-version/semver-helpers';
+import { debug, warn } from '../logger';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
 type Options = BumpOptions & { channel: Channel; debug?: boolean };
