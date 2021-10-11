@@ -54,6 +54,29 @@ describe('nextVersion in main, for nx workspace', () => {
     expect(version).toContain('1.0.0-beta.2');
     expect(version).toContain('lib-b/1.0.0-beta.2');
   });
+
+  it('a new feat for lib-c with tagPrefix', async () => {
+    // arrange
+    const config = await getConfig();
+    const cwd = workspacePath;
+
+    await gitTagVersion('v1.0.0-beta.1', undefined, { cwd });
+    await gitTagVersion('lib-a/v1.0.0-beta.1', undefined, { cwd });
+    await gitTagVersion('lib-b/v1.0.0-beta.1', undefined, { cwd });
+    await gitTagVersion('lib-c/v1.0.0-beta.1', undefined, { cwd });
+
+    await gitCommitFile('packages/lib-c/src/feat-1c.ts', 'fix(lib-c): a new feat in the c lib', { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, {
+      workspace: 'nx',
+      tagPrefix: 'v'
+    });
+
+    // assert
+    expect(version).toContain('v1.0.0-beta.2');
+    expect(version).toContain('lib-c/v1.0.0-beta.2');
+  });
 });
 
 async function testNextVersion(cwd: string, config: Config, options: NextVersionOptions) {

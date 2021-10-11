@@ -51,9 +51,12 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
 
   let packageTags: string[] = [];
   if (options.workspace === 'nx') {
-    const projects = await nxAffectedProjects(lastTag);
+    const mainTagPrefix = tagPrefix ? tagPrefix : '';
+    const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
     packageTags = await Promise.all(
-      projects.map(async (p) => (await nextVersion(config, { debug: options.debug, tagPrefix: `${p}/`, bump }))[0])
+      projects.map(
+        async (p) => (await nextVersion(config, { debug: options.debug, tagPrefix: `${p}/${mainTagPrefix}`, bump }))[0]
+      )
     );
   }
 
