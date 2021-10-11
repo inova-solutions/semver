@@ -1,11 +1,10 @@
 import chalk from 'chalk';
-import { Task } from '@nrwl/devkit';
 import { Config, isBetaBranch } from '../config';
 import { conventionalRecommendedBump, ReleaseType } from '../conventional-changelog/conventional-commits';
 import { getAllTags, lastSemverTag as _lastSemverTag } from '../git-helpers';
 import { Channel, increment } from './semver-helpers';
-import { exec } from 'child_process';
 import { debug, info } from '../logger';
+import { nxAffectedProjects } from './nx-helpers';
 
 export interface NextVersionOptions {
   tagPrefix?: string;
@@ -64,26 +63,6 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel);
   packageTags.push(tagPrefix ? `${tagPrefix}${incrementedVersion}` : incrementedVersion);
   return packageTags;
-}
-
-async function nxAffectedProjects(base: string): Promise<string[]> {
-  const baseCmd = 'npx nx print-affected --target=build';
-  const cmd = base ? `${baseCmd} --base=${base} --head=HEAD` : `${baseCmd} --all`;
-
-  return new Promise<string[]>((resolve, reject) => {
-    exec(cmd, (error, stdout) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      const tasks: Task[] = JSON.parse(stdout)?.tasks;
-      if (!tasks) {
-        reject('The command "nx print-affected" does not return the expected output');
-        return;
-      }
-      resolve(tasks.map((k) => k.target.project));
-    });
-  });
 }
 
 async function lastSemverTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {

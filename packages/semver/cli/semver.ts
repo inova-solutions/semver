@@ -7,6 +7,7 @@ import { addListCmd } from './commands/list.cmd';
 import { addNextVersionCmd } from './commands/next-version.cmd';
 import { CLI_NAME, getGitVersion, MIN_GIT_VERSION } from '../lib';
 import { version } from '../package.json';
+import { addBumpCmd } from './commands/bump.cmd';
 
 main();
 
@@ -21,6 +22,7 @@ async function main() {
     // add commands
     addListCmd(program);
     addNextVersionCmd(program);
+    addBumpCmd(program);
 
     // run
     await program.parseAsync();

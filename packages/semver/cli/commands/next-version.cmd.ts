@@ -8,9 +8,13 @@ import { info } from '../../lib/logger';
  * @param program CLI program
  */
 export function addNextVersionCmd(program: Command) {
-  program
-    .command('next-version')
-    .description('Show the version for the pending release')
+  addOptions(program.command('next-version').description('Show the version for the pending release')).action(
+    handleCommand
+  );
+}
+
+export function addOptions(cmd: Command): Command {
+  return cmd
     .option(
       '-w, --workspace <repoType>',
       'Specify your repo type. Ignore this option if you have only one project in your repo. Or pass "nx" if you are using nx workspace'
@@ -21,8 +25,7 @@ export function addNextVersionCmd(program: Command) {
       'You can pass "major", "minor" or "patch" if you want override the recommended bump by conventional commit analyzer'
     )
     .option('--path <path>', 'Specify the path to only calculate with git commits related to the path')
-    .option('-d, --debug', 'Output debugging information')
-    .action(handleCommand);
+    .option('-d, --debug', 'Output debugging information');
 }
 
 async function handleCommand(options: NextVersionOptions) {
