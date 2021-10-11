@@ -8,9 +8,10 @@ import { Callback, Options as BumpOptions } from 'conventional-recommended-bump'
 import { presetResolver, PresetResolverResult } from './preset-resolver';
 import { lastSemverTag } from './git-helpers';
 import { Channel } from './semver-helpers';
+import { debug, warn } from './logger';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
-type Options = BumpOptions & { channel: Channel };
+type Options = BumpOptions & { channel: Channel; debug?: boolean };
 export type ReleaseType = Callback.Recommendation.ReleaseType;
 
 /**
@@ -39,6 +40,7 @@ function loadPrestLoader(preset: string) {
 
 async function whatBump(options: Options, config: PresetResolverResult) {
   const tag = await lastSemverTag({ channel: options.channel, tagPrefix: options.tagPrefix });
+  debug(options.debug, `get commits since ${chalk.blueBright.bold(tag)}`);
   const _whatBump = options.whatBump || config.recommendedBumpOpts?.whatBump;
 
   if (typeof _whatBump !== 'function') {
@@ -51,7 +53,7 @@ async function whatBump(options: Options, config: PresetResolverResult) {
   // `parserOpts` object and remove `recommendedBumpOpts.parserOpts` from each preset package if it exists.
   const parserOpts = config.recommendedBumpOpts?.parserOpts ? config.recommendedBumpOpts.parserOpts : config.parserOpts;
 
-  const from = tag ? (options.tagPrefix ? `${options.tagPrefix}${tag}` : tag) : undefined
+  const from = tag ? (options.tagPrefix ? `${options.tagPrefix}${tag}` : tag) : undefined;
   return new Promise<{ releaseType: ReleaseType; reason: string }>((resolve, reject) => {
     try {
       gitRawCommits({
@@ -65,7 +67,9 @@ async function whatBump(options: Options, config: PresetResolverResult) {
             const commits = options.ignoreReverted ? conventionalCommitsFilter(data) : data;
 
             if (!commits || !commits.length) {
-              console.log(chalk.yellowBright.bold(options.path ?? '', 'No commits since last release'));
+              warn(
+                options.path ? `No commits in "${options.path}" since last release` : 'No commits since last release'
+              );
               resolve(undefined);
               return;
             }

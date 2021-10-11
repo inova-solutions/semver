@@ -5,6 +5,7 @@ import { conventionalRecommendedBump, ReleaseType } from './conventional-commits
 import { getAllTags, lastSemverTag as _lastSemverTag } from './git-helpers';
 import { Channel, increment } from './semver-helpers';
 import { exec } from 'child_process';
+import { debug, info } from './logger';
 
 export interface NextVersionOptions {
   tagPrefix?: string;
@@ -25,13 +26,14 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   const channel: Channel = (await isBetaBranch()) ? 'beta' : config.releaseCandidate ? 'rc' : 'stable';
   const tagPrefix = options.tagPrefix;
 
-  debug(options.debug, `release channel: ${chalk.greenBright.bold(channel)}`);
+  debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
   let recommendedBump = { releaseType: options.bump, reason: undefined };
   if (!recommendedBump.releaseType) {
     recommendedBump = await conventionalRecommendedBump({
       preset: config.commitMessageFormat,
       path: options.path,
+      debug: options.debug,
       tagPrefix,
       channel,
     });
@@ -42,10 +44,10 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   const lastTag = await lastSemverTag({ channel, tagPrefix });
   const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });
 
-  debug(options.debug, `current version: ${chalk.blueBright.bold(lastTag)}`);
-  debug(options.debug, `last release: ${chalk.blueBright.bold(lastReleaseTag)}`);
+  debug(options.debug, `current version is ${chalk.blueBright.bold(lastTag)}`);
+  debug(options.debug, `last release was ${chalk.blueBright.bold(lastReleaseTag)}`);
 
-  if (recommendedBump.reason) console.log(`summary: ${chalk.blueBright.bold(recommendedBump.reason)}`);
+  if (recommendedBump.reason) info(`${chalk.greenBright.bold(recommendedBump.reason)}`);
 
   let packageTags: string[] = [];
   if (options.workspace === 'nx') {
@@ -92,8 +94,4 @@ async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: str
     return (await getAllTags({ tagPrefix: options.tagPrefix })).filter((v) => !v.includes(options.channel))[0];
   }
   return (await getAllTags({ channel: 'stable', tagPrefix: options.tagPrefix }))[0];
-}
-
-function debug(enabled: boolean, text: string): void {
-  if (enabled) console.log(text);
 }

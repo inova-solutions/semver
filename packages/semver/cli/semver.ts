@@ -5,11 +5,8 @@ import chalk from 'chalk';
 import { lt as ltSemver } from 'semver';
 import { addListCmd } from './commands/list.cmd';
 import { addNextVersionCmd } from './commands/next-version.cmd';
-import { getGitVersion } from '../lib';
+import { CLI_NAME, getGitVersion, MIN_GIT_VERSION } from '../lib';
 import { version } from '../package.json';
-
-const MIN_GIT_VERSION = '2.22.0';
-const CLI_NAME = 'semver-cli';
 
 main();
 
