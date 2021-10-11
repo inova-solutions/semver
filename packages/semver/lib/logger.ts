@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { CLI_NAME } from './const';
+import { CLI_NAME } from './constants';
 
 export function debug(enabled: boolean, text: string): void {
   const prefix = chalk.magenta.bold(CLI_NAME);

@@ -27,6 +27,11 @@ export interface Config {
    * Default is set to `true`.
    */
   releaseCandidate: boolean;
+  /**
+   * Commit types to ignore.
+   * Default: `ci`, `repo`, `docs`, `test`, `chore`
+   */
+  commitTypesToIgnore?: string[];
 }
 
 /**
@@ -39,6 +44,7 @@ export async function getConfig(): Promise<Config> {
     releaseBranchName: 'releases/*',
     commitMessageFormat: 'angular',
     releaseCandidate: true,
+    commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`],
   };
 
   let config: Config = defaultConfig;

@@ -1,10 +1,10 @@
 // Adapted from https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-recommended-bump
 import * as conventionalChangelogPresetLoader from 'conventional-changelog-preset-loader';
 import * as conventionalCommitsParser from 'conventional-commits-parser';
-import * as conventionalCommitsFilter from 'conventional-commits-filter';
 import * as gitRawCommits from 'git-raw-commits';
 import * as concat from 'concat-stream';
 import chalk from 'chalk';
+import { Commit } from 'conventional-commits-parser';
 import { Callback, Options as BumpOptions } from 'conventional-recommended-bump';
 import { presetResolver, PresetResolverResult } from './preset-resolver';
 import { lastSemverTag } from '../git-helpers';
@@ -12,7 +12,11 @@ import { Channel } from '../next-version/semver-helpers';
 import { debug, warn } from '../logger';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
-type Options = BumpOptions & { channel: Channel; debug?: boolean };
+type Options = Omit<BumpOptions, 'ignoreReverted' | 'skipUnstable' | 'config'> & {
+  channel: Channel;
+  debug?: boolean;
+  commitTypesToIgnore?: string[];
+};
 export type ReleaseType = Callback.Recommendation.ReleaseType;
 
 /**
@@ -64,18 +68,17 @@ async function whatBump(options: Options, config: PresetResolverResult) {
       })
         .pipe(conventionalCommitsParser(parserOpts))
         .pipe(
-          concat((data: unknown) => {
-            const commits = options.ignoreReverted ? conventionalCommitsFilter(data) : data;
+          concat((commits: Commit[]) => {
+            const commitTypesToIgnore = options.commitTypesToIgnore ?? [];
+            const relevantCommits: Commit[] = commits.filter((c) => !commitTypesToIgnore.includes(c.type));
 
-            if (!commits || !commits.length) {
-              warn(
-                options.path ? `No commits in "${options.path}" since last release` : 'No commits since last release'
-              );
+            if (!relevantCommits || !relevantCommits.length) {
+              warnNoCommits(commits?.length > 0, options.path);
               resolve(undefined);
               return;
             }
 
-            const result = _whatBump(commits);
+            const result = _whatBump(relevantCommits);
             let level: Callback.Recommendation.ReleaseType;
 
             if (result?.level >= 0) {
@@ -89,4 +92,12 @@ async function whatBump(options: Options, config: PresetResolverResult) {
       reject(error);
     }
   });
+}
+
+function warnNoCommits(hasIrrelevantCommits: boolean, path: string) {
+  if (hasIrrelevantCommits) {
+    warn(path ? `No relevant commits in "${path}" since last release` : 'No relevant commits since last release');
+  } else {
+    warn(path ? `No commits in "${path}" since last release` : 'No commits since last release');
+  }
 }

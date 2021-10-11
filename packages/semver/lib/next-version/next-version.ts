@@ -34,6 +34,7 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
       preset: config.commitMessageFormat,
       path: options.path,
       debug: options.debug,
+      commitTypesToIgnore: config.commitTypesToIgnore,
       tagPrefix,
       channel,
     });

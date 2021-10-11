@@ -10,11 +10,16 @@ describe('config, read', () => {
       releaseBranchName: 'releases/*',
       commitMessageFormat: 'angular',
       releaseCandidate: true,
+      commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`],
     });
   });
   it('config merge with defaults works', async () => {
     // arrange
-    const configMock: Config = { betaBranchName: 'master', releaseCandidate: false };
+    const configMock: Config = {
+      betaBranchName: 'master',
+      releaseCandidate: false,
+      commitTypesToIgnore: [`ci`, `repo`, `chore`],
+    };
     mockExistsSync(true);
     mockReadFile(null, configMock);
 
@@ -27,6 +32,7 @@ describe('config, read', () => {
       releaseBranchName: 'releases/*',
       commitMessageFormat: 'angular',
       releaseCandidate: false,
+      commitTypesToIgnore: [`ci`, `repo`, `chore`],
     });
   });
 });
