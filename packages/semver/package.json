@@ -1,6 +1,6 @@
 {
   "name": "@inova/semver",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "bin": {
     "semver": "./cli/semver.js"
   },

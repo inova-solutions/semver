@@ -79,12 +79,18 @@ export async function gitCommits(messages: string[], execaOptions: execa.Options
  * @param fileName Filename to create for a commit e.g. `apps/demo-app/README:md`
  * @param message Commit message.
  * @param execaOptions Options to pass to `execa`.
+ * @param fileContent Content for the file.
  */
-export async function gitCommitFile(fileName: string, message: string, execaOptions: execa.Options<string>) {
+export async function gitCommitFile(
+  fileName: string,
+  message: string,
+  execaOptions: execa.Options<string>,
+  fileContent?: string
+) {
   const dir = join(execaOptions.cwd, dirname(fileName));
   const fullName = join(execaOptions.cwd, fileName);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(fullName, message, { encoding: 'utf-8' });
+  writeFileSync(fullName, fileContent ?? message, { encoding: 'utf-8' });
 
   await execa('git', ['add', '.'], execaOptions);
   await execa('git', ['commit', '-m', message], execaOptions);

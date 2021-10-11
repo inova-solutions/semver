@@ -1,6 +1,6 @@
 import * as findVersions from 'find-versions';
 import * as _gitSemverTags from 'git-semver-tags';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { CONFIG_FILE, isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './next-version/semver-helpers';
@@ -106,6 +106,25 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
       resolve(parseGitTagResult(stdout, options));
     });
   });
+}
+
+/**
+ * Add a new git tag and push it to the origin.
+ * @param gitTag Tag.
+ * @param commit Commit to tag (default is HEAD).
+ */
+export function addGitTag(gitTag: string, commit = 'HEAD'): void {
+  execSync(`git tag ${gitTag} ${commit}`, { stdio: 'inherit' });
+  execSync(`git push origin ${gitTag}`, { stdio: 'inherit' });
+}
+
+/**
+ * Commit git changes.
+ * @param message Commit message.
+ */
+export function commit(message: string): void {
+  execSync(`git add .`, { stdio: 'inherit' });
+  execSync(`git commit -m "${message}""`, { stdio: 'inherit' });
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {

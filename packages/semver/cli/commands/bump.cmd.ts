@@ -1,9 +1,9 @@
 import { Command } from 'commander';
-import { bump, getConfig, nextVersion, NextVersionOptions } from '../../lib';
+import { release, getConfig, nextVersion, NextVersionOptions } from '../../lib';
 import { addOptions as addNextVersionOptions } from './next-version.cmd';
 
 /**
- * Adds a subcommand to the program for listing the existing tags.
+ * Adds a subcommand to the program for bumping the version and create a new release.
  * @param program CLI program
  */
 export function addBumpCmd(program: Command) {
@@ -14,5 +14,5 @@ async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
 
   const versions = await nextVersion(config, options);
-  await bump(options, versions);
+  await release(options, versions);
 }
