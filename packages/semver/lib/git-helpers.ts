@@ -2,8 +2,9 @@ import * as findVersions from 'find-versions';
 import * as _gitSemverTags from 'git-semver-tags';
 import { exec, execSync } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
-import { CONFIG_FILE, isBetaBranch, isReleaseBranch } from './config';
+import { isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './next-version/semver-helpers';
+import { ERRORS } from './constants';
 
 export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
 
@@ -46,7 +47,7 @@ export async function lastSemverTag(options: SemverTagOptions) {
   } else if (await isBetaBranch()) {
     tags = await getAllTags(options);
   } else {
-    throw new Error(`branch not recognized, use ${CONFIG_FILE} for configuration`);
+    throw new Error(ERRORS.UNKNOWN_BRANCH);
   }
   return tags[0];
 }

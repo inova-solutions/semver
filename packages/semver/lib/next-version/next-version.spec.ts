@@ -1,6 +1,7 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile } from '../test/git-utils';
 import { nextVersion, NextVersionOptions } from './next-version';
 import { Config, getConfig } from '../config';
+import { ERRORS } from '../constants';
 
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -620,6 +621,27 @@ describe('nextVersion in main, with tagPrefix and path', () => {
 
     // assert
     expect(version[0]).toEqual('first-app/1.0.1-beta.1');
+  });
+});
+
+describe('nextVersion unknown branch', () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it('should throw error', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false, 'feature/my-feat-branch');
+    await commitAndTag('feat: a global feat', '1.0.0-beta.3', cwd);
+    await gitCommits(['fix: set releaseCandidate to false'], { cwd });
+
+    // act & assert
+    await expect(testNextVersion(cwd, config, {})).rejects.toThrow(ERRORS.UNKNOWN_BRANCH);
   });
 });
 

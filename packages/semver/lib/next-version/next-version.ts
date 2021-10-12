@@ -1,10 +1,11 @@
 import chalk from 'chalk';
-import { Config, isBetaBranch } from '../config';
+import { Config, isBetaBranch, isReleaseBranch } from '../config';
 import { conventionalRecommendedBump, ReleaseType } from '../conventional-changelog/conventional-commits';
 import { getAllTags, lastSemverTag as _lastSemverTag } from '../git-helpers';
 import { Channel, increment } from './semver-helpers';
 import { debug, info } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
+import { ERRORS } from '../constants';
 
 export interface NextVersionOptions {
   tagPrefix?: string;
@@ -22,7 +23,7 @@ export interface NextVersionOptions {
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
 export async function nextVersion(config: Config, options: NextVersionOptions): Promise<string[]> {
-  const channel: Channel = (await isBetaBranch()) ? 'beta' : config.releaseCandidate ? 'rc' : 'stable';
+  const channel: Channel = await getChannel(config);
   const tagPrefix = options.tagPrefix;
 
   debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
@@ -77,4 +78,10 @@ async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: str
     return (await getAllTags({ tagPrefix: options.tagPrefix })).filter((v) => !v.includes(options.channel))[0];
   }
   return (await getAllTags({ channel: 'stable', tagPrefix: options.tagPrefix }))[0];
+}
+
+async function getChannel(config: Config): Promise<Channel> {
+  if (await isBetaBranch()) return 'beta';
+  else if (await isReleaseBranch()) return config.releaseCandidate ? 'rc' : 'stable';
+  throw new Error(ERRORS.UNKNOWN_BRANCH);
 }

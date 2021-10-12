@@ -1,7 +1,6 @@
 import { readFile as _readFile, existsSync } from 'fs';
+import { CONFIG_FILE } from './constants';
 import { getCurrentBranch } from './git-helpers';
-
-export const CONFIG_FILE = '.semver.json';
 
 export interface Config {
   /**
