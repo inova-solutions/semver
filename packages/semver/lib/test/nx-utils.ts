@@ -12,10 +12,17 @@ import { exec } from 'child_process';
  */
 export async function createWorkspace(name: string): Promise<string> {
   let cwd = tempDir();
-  const createCmd = `npx --yes create-nx-workspace --preset=npm --name=${name} --nx-cloud=false --interactive=false`;
+  const createCmd = `npx --yes create-nx-workspace --preset=npm --name=${name} --nx-cloud=false --interactive=false --skipGit=true`;
 
   await runCmd(createCmd, cwd);
   cwd = join(cwd, name);
+
+  // init git manually
+  await runCmd('git init', cwd);
+  await runCmd('git config user.email "tester@example.com"', cwd);
+  await runCmd('git config user.name "Testus Maximus"', cwd);
+  await runCmd('git add .', cwd);
+  await runCmd('git commit -m "repo: init workspace"', cwd);
 
   // sync default branch name
   const nxJson = await readNxJson(cwd);

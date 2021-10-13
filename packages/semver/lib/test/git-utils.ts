@@ -20,7 +20,7 @@ export async function initGit(withRemote: boolean, branch: string) {
   });
 
   await execa('git', ['config', 'user.email', 'tester@example.com'], { cwd });
-  await execa('git', ['config', 'user.name', 'Testus Maximuss'], { cwd });
+  await execa('git', ['config', 'user.name', 'Testus Maximus'], { cwd });
 
   const repositoryUrl = fileUrl(cwd);
   return { cwd, repositoryUrl };
