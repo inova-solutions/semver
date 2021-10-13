@@ -65,6 +65,7 @@ describe('release', () => {
     const packageJson = await readPackageJson(join(cwd, 'package.json'));
     expect(packageJson.version).toEqual('1.0.0-beta.2');
   });
+
 });
 
 async function testRelease(cwd: string, config: Config, options: NextVersionOptions) {
