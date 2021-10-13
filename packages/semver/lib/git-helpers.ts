@@ -125,7 +125,7 @@ export function addGitTag(gitTag: string, commit = 'HEAD'): void {
  */
 export function commit(message: string): void {
   execSync(`git add .`);
-  execSync(`git commit -m "${message}""`);
+  execSync(`git commit -m "${message}"`);
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
