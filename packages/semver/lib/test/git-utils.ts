@@ -18,6 +18,10 @@ export async function initGit(withRemote: boolean, branch: string) {
     const args = withRemote ? ['--bare'] : [];
     return execa('git', ['init', ...args], { cwd });
   });
+
+  await execa('git', ['config', 'user.email', 'tester@example.com'], { cwd });
+  await execa('git', ['config', 'user.name', 'Testus Maximus'], { cwd });
+
   const repositoryUrl = fileUrl(cwd);
   return { cwd, repositoryUrl };
 }
