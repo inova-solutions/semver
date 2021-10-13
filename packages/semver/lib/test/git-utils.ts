@@ -152,6 +152,8 @@ async function gitShallowClone(repositoryUrl: string, branch = 'main', depth = 1
       cwd,
     }
   );
+
+  await configGitUser(cwd);
   return cwd;
 }
 
