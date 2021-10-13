@@ -19,7 +19,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - name: install dependencies
+      - name: install dependencies main
+        run: npm ci
+      - name: install dependencies semver
+        working-directory: packages/semver
         run: npm ci
       - name: test affected in PR
         if: ${{ github.event_name == 'pull_request' }}
