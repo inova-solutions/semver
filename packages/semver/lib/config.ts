@@ -9,7 +9,7 @@ export interface Config {
    */
   betaBranchName?: string;
   /**
-   * Name of the branch that produces the rc and final builds.
+   * Name of the branch that produces the rc and stable builds.
    * It can be defined as a glob in which case the definition will be expanded to one per matching branch existing in the repository.
    * Default is set to `releases/*`.
    */
@@ -22,7 +22,7 @@ export interface Config {
   commitMessageFormat?: string;
   /**
    * Indicates whether the current branch produces rc builds.
-   * This is only relevant for release branches.
+   * This is only relevant for release branches. Set this to `false` for producing stable builds from your release branch.
    * Default is set to `true`.
    */
   releaseCandidate: boolean;
