@@ -54,12 +54,17 @@ async function bumpNxProjects(tags: string[], tagPrefix: string) {
       const [project, semverTag] = tag.split('/');
       if (allProjects.includes(project) && semverTag) {
         const version = semverTag.replace(tagPrefix, '');
-        const packageJsonPath = getNxProjectPackageJson(project);
-        if (packageJsonPath) {
-          const packageJson = await readPackageJson(packageJsonPath);
-          packageJson.version = version;
-          await updatePackageJson(packageJson, packageJsonPath);
-        }
+        const packageJsonPaths = [getNxProjectPackageJson(project), getNxProjectDistPackageJson(project)];
+
+        await Promise.all(
+          packageJsonPaths
+            .filter((p) => !!p)
+            .map(async (packageJsonPath) => {
+              const packageJson = await readPackageJson(packageJsonPath);
+              packageJson.version = version;
+              await updatePackageJson(packageJson, packageJsonPath);
+            })
+        );
       }
     })
   );
@@ -69,6 +74,13 @@ function getNxProjectPackageJson(project: string) {
   let path = `packages/${project}/package.json`;
   if (existsSync(path)) return path;
   path = `libs/${project}/package.json`;
+  if (existsSync(path)) return path;
+  return undefined;
+}
+function getNxProjectDistPackageJson(project: string) {
+  let path = `dist/packages/${project}/package.json`;
+  if (existsSync(path)) return path;
+  path = `dist/libs/${project}/package.json`;
   if (existsSync(path)) return path;
   return undefined;
 }

@@ -115,8 +115,8 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
  * @param commit Commit to tag (default is HEAD).
  */
 export function addGitTag(gitTag: string, commit = 'HEAD'): void {
-  execSync(`git tag ${gitTag} ${commit}`, { stdio: 'inherit' });
-  execSync(`git push origin ${gitTag}`, { stdio: 'inherit' });
+  execSync(`git tag ${gitTag} ${commit}`);
+  execSync(`git push origin ${gitTag}`);
 }
 
 /**
@@ -124,8 +124,8 @@ export function addGitTag(gitTag: string, commit = 'HEAD'): void {
  * @param message Commit message.
  */
 export function commit(message: string): void {
-  execSync(`git add .`, { stdio: 'inherit' });
-  execSync(`git commit -m "${message}""`, { stdio: 'inherit' });
+  execSync(`git add .`);
+  execSync(`git commit -m "${message}""`);
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
