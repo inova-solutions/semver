@@ -21,8 +21,8 @@ jobs:
         run: npm ci
       - name: test affected in PR
         if: ${{ github.event_name == 'pull_request' }}
-        run: npx nx affected:test --base='origin/main'
+        run: npx nx affected:test --base=origin/main
       - name: test affected in main
         if: ${{ github.event_name != 'pull_request' }}
-        run: npx nx affected:test --base='origin/main~1'
+        run: npx nx affected:test --base=origin/main~1
 
