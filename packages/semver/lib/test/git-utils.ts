@@ -19,9 +19,7 @@ export async function initGit(withRemote: boolean, branch: string) {
     return execa('git', ['init', ...args], { cwd });
   });
 
-  await execa('git', ['config', 'user.email', 'tester@example.com'], { cwd });
-  await execa('git', ['config', 'user.name', 'Testus Maximus'], { cwd });
-
+  await configGitUser(cwd);
   const repositoryUrl = fileUrl(cwd);
   return { cwd, repositoryUrl };
 }
@@ -130,6 +128,7 @@ export async function gitCheckout(branch: string, action: 'create' | 'checkout',
 async function initBareRepo(repositoryUrl: string, branch = 'main') {
   const cwd = tempDir();
   await execa('git', ['clone', '--no-hardlinks', repositoryUrl, cwd], { cwd });
+  await configGitUser(cwd);
   await gitCheckout(branch, 'create', { cwd });
   await gitCommits(['Initial commit'], { cwd });
   await execa('git', ['push', repositoryUrl, branch], { cwd });
@@ -154,4 +153,13 @@ async function gitShallowClone(repositoryUrl: string, branch = 'main', depth = 1
     }
   );
   return cwd;
+}
+
+/**
+ * Set user to local git config.
+ * @param cwd Working dir.
+ */
+async function configGitUser(cwd: string) {
+  await execa('git', ['config', 'user.email', 'tester@example.com'], { cwd });
+  await execa('git', ['config', 'user.name', 'Testus Maximus'], { cwd });
 }
