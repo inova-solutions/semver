@@ -1,0 +1,30 @@
+name: ci-pr
+on:
+  pull_request:
+    branches: ['main']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: install dependencies main
+        run: npm ci
+      - name: install dependencies semver
+        working-directory: packages/semver
+        run: npm ci
+      - name: test affected
+        run: npx nx affected:test --base=origin/main --head=HEAD
+      - name: lint affected
+        run: npx nx affected:lint --base=origin/main --head=HEAD
+      - name: build affected
+        run: npx nx affected:build --base=origin/main --head=HEAD

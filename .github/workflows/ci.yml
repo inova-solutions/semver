@@ -1,11 +1,9 @@
 name: ci
 on:
   push:
-    branches: [ 'main', 'releases/**' ]
-  pull_request:
-    branches: [ 'main' ]
+    branches: ['main', 'releases/**']
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,10 +22,9 @@ jobs:
       - name: install dependencies semver
         working-directory: packages/semver
         run: npm ci
-      - name: test affected in PR
-        if: ${{ github.event_name == 'pull_request' }}
-        run: npx nx affected:test --base=origin/main --head=HEAD
-      - name: test affected in main
-        if: ${{ github.event_name != 'pull_request' }}
+      - name: test affected
         run: npx nx affected:test --base=origin/main~1 --head=HEAD
-
+      - name: lint affected
+        run: npx nx affected:lint --base=origin/main~1 --head=HEAD
+      - name: build affected
+        run: npx nx affected:build --base=origin/main~1 --head=HEAD
