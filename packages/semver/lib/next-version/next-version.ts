@@ -28,6 +28,9 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
 
   debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
+  const lastTag = await lastSemverTag({ channel, tagPrefix });
+  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });
+
   let recommendedBump = { releaseType: options.bump, reason: undefined };
   if (!recommendedBump.releaseType) {
     recommendedBump = await conventionalRecommendedBump({
@@ -39,16 +42,13 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
       channel,
     });
   }
-  if (recommendedBump === undefined) return null;
-
-  const bump = recommendedBump.releaseType;
-  const lastTag = await lastSemverTag({ channel, tagPrefix });
-  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });
+  if (recommendedBump === undefined && lastTag) return null;
+  const bump = recommendedBump?.releaseType ?? 'patch';
 
   debug(options.debug, `current version is ${chalk.blueBright.bold(lastTag)}`);
   debug(options.debug, `last release was ${chalk.blueBright.bold(lastReleaseTag)}`);
 
-  if (recommendedBump.reason) info(`${chalk.greenBright.bold(recommendedBump.reason)}`);
+  if (recommendedBump?.reason) info(`${chalk.greenBright.bold(recommendedBump.reason)}`);
 
   let packageTags: string[] = [];
   if (options.workspace === 'nx') {
