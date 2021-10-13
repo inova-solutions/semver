@@ -18,7 +18,7 @@ export async function createWorkspace(name: string): Promise<string> {
   cwd = join(cwd, name);
 
   // init git manually
-  await runCmd('git init', cwd);
+  await runCmd('git init --initial-branch=main', cwd);
   await runCmd('git config user.email "tester@example.com"', cwd);
   await runCmd('git config user.name "Testus Maximus"', cwd);
   await runCmd('git add .', cwd);
