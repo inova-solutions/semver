@@ -1,0 +1,8 @@
+runs:
+  using: 'composite'
+  steps:
+    - name: install dependencies main
+      run: npm ci
+    - name: install dependencies semver
+      working-directory: packages/semver
+      run: npm ci

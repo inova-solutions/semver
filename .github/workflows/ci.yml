@@ -23,11 +23,7 @@ jobs:
         run: npm install -g npm@7
 
         # install dependencies for root and all sub packages
-      - name: install dependencies main
-        run: npm ci
-      - name: install dependencies semver
-        working-directory: packages/semver
-        run: npm ci
+      - uses: npm-install@v1
 
       - name: test affected
         run: npx nx affected:test --base=origin/main~1 --head=HEAD
@@ -47,6 +43,9 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+
+        # install dependencies for root and all sub packages
+      - uses: npm-install@v1
 
       - name: bump version
         run: npm run next-version
