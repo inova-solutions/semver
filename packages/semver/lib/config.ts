@@ -46,7 +46,7 @@ export async function getConfig(): Promise<Config> {
     releaseBranchName: 'releases/*',
     commitMessageFormat: 'angular',
     releaseCandidate: true,
-    commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`],
+    commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`, `refactor`],
   };
 
   let config: Config = defaultConfig;

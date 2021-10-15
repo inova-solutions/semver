@@ -4,7 +4,6 @@ import { debug } from './logger';
 import { NextVersionOptions } from './next-version/next-version';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit } from './git-helpers';
-import { push } from '.';
 
 /**
  * Create a new release.
