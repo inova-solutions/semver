@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -17,11 +17,19 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+
+        # min. npm v7 is required for the tests
+      - name: update npm
+        if: startsWith(matrix.node-version, '14')
+        run: npm install -g npm@7
+
+        # install dependencies for root and all sub packages
       - name: install dependencies main
         run: npm ci
       - name: install dependencies semver
         working-directory: packages/semver
         run: npm ci
+
       - name: test affected
         run: npx nx affected:test --base=origin/main --head=HEAD
       - name: lint affected

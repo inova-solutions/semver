@@ -1,6 +1,5 @@
-import { CONFIG_FILE } from './constants';
 import { getCurrentBranch, lastSemverTag, SemverTagOptions } from './git-helpers';
-import { gitCheckout, gitCommitFile, gitCommits, gitRepo, gitTagVersion } from './test/git-utils';
+import { gitCheckout, gitCommits, gitRepo, gitTagVersion } from './test/git-utils';
 
 describe('getCurrentBranch', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
