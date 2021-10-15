@@ -23,7 +23,11 @@ jobs:
         run: npm install -g npm@7
 
         # install dependencies for root and all sub packages
-      - uses: npm-install@v1
+      - name: install dependencies main
+        run: npm ci
+      - name: install dependencies semver
+        working-directory: packages/semver
+        run: npm ci
 
       - name: test affected
         run: npx nx affected:test --base=origin/main~1 --head=HEAD
@@ -44,13 +48,27 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
 
-        # install dependencies for root and all sub packages
-      - uses: npm-install@v1
+      # install dependencies for root and all sub packages
+      - name: install dependencies main
+        run: npm ci
+      - name: install dependencies semver
+        working-directory: packages/semver
+        run: npm ci
+
+      - name: build affected
+        run: npx nx affected:build --base=origin/main~1 --head=HEAD
 
       - name: bump version
         run: npm run next-version
 
+      - name: check semver dist exists
+        id: check_semver_dist
+        uses: andstor/file-existence-action@v1
+        with:
+          files: 'dist/packages/semver/package.json'
+
       - name: publish semver
+        if: steps.check_semver_dist.outputs.files_exists == 'true'
         working-directory: dist/packages/semver
         run: npm publish --ignore-scripts --access public --dry-run
         env:
