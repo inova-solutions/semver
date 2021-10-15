@@ -1,5 +1,6 @@
+import { CONFIG_FILE } from './constants';
 import { getCurrentBranch, lastSemverTag, SemverTagOptions } from './git-helpers';
-import { gitCheckout, gitCommits, gitRepo, gitTagVersion } from './test/git-utils';
+import { gitCheckout, gitCommitFile, gitCommits, gitRepo, gitTagVersion } from './test/git-utils';
 
 describe('getCurrentBranch', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -65,6 +66,20 @@ describe('lastSemverTag', () => {
 
     // assert
     expect(tag).toEqual('1.1.0-rc.1');
+  });
+
+  it('works for stable', async () => {
+    // arrange
+    const { cwd } = await gitRepo(false, 'main');
+    await commitAndTag('feat: new feat', '1.1.0-beta.7', cwd);
+    await gitCheckout('releases/1.0', 'create', { cwd });
+    await gitTagVersion('1.1.0', undefined, { cwd });
+
+    // act
+    const tag = await lastSemverTagTest(cwd, { channel: 'stable' });
+
+    // assert
+    expect(tag).toEqual('1.1.0');
   });
 });
 
