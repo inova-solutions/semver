@@ -1,6 +1,6 @@
 # semver
 
-CLI & library for managing semantic versioning in git repos.
+CLI for managing semantic versioning in git repos.
 
 ## Configuration
 
