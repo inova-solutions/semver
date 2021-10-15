@@ -1,6 +1,20 @@
 {
   "name": "@inova/semver",
   "version": "0.0.0",
+  "description": "version management for git repos",
+  "author": "Admir Ramic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inova-solutions/semver.git"
+  },
+  "keywords": [
+    "package",
+    "publish",
+    "release",
+    "semver",
+    "version"
+  ],
+  "license": "MIT",
   "bin": {
     "semver": "./cli/semver.js"
   },

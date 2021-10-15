@@ -5,7 +5,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [14.x, 16.x]
@@ -36,8 +35,25 @@ jobs:
         run: npx nx affected:lint --base=origin/main~1 --head=HEAD
       - name: build affected
         run: npx nx affected:build --base=origin/main~1 --head=HEAD
-      - name: preview version
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+
+      - name: bump version
         run: npm run next-version
-      # - name: publish semver to npm
-      #   working-directory: dist/packages/semver
-      #   run: npm publish
+
+      - name: publish semver
+        working-directory: dist/packages/semver
+        run: npm publish --ignore-scripts --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

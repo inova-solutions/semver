@@ -14,6 +14,8 @@ import { addGitTag, commit } from './git-helpers';
 export async function release(options: NextVersionOptions, tags: string[]) {
   if (!tags) return;
   debug(options.debug, 'Start with bump...');
+  // set the commits author and commiter info and prevent the `git` CLI to prompt for username/password
+  setGitAuthor();
 
   let hasChanges = false;
   const mainVersion = getMainVersion(tags, options.tagPrefix);
@@ -107,4 +109,13 @@ async function updatePackageJson(packageJson: unknown, path: string) {
       resolve();
     });
   });
+}
+
+function setGitAuthor() {
+  const author = 'inova-semver-bot';
+  const email = 'inova-semver-bot@inova.ch';
+  process.env.GIT_AUTHOR_NAME = author;
+  process.env.GIT_AUTHOR_EMAIL = email;
+  process.env.GIT_COMMITTER_NAME = author;
+  process.env.GIT_COMMITTER_EMAIL = email;
 }
