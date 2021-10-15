@@ -4,6 +4,7 @@ import { debug } from './logger';
 import { NextVersionOptions } from './next-version/next-version';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit } from './git-helpers';
+import { push } from '.';
 
 /**
  * Create a new release.
@@ -38,6 +39,7 @@ export async function release(options: NextVersionOptions, tags: string[]) {
 
   if (hasChanges) {
     commit(`chore(release): ${mainVersion}`);
+    push();
   }
 
   // add git tags

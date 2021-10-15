@@ -128,6 +128,13 @@ export function commit(message: string): void {
   execSync(`git commit -m "${message}"`);
 }
 
+/**
+ * Push git changes.
+ */
+export function push(): void {
+  execSync(`git push`);
+}
+
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
   const tags = filterByPrefix(result.split('\n'), options.tagPrefix)
     .map((tag) => validSemver(tag))
