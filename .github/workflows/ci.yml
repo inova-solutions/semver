@@ -59,7 +59,7 @@ jobs:
         run: npx nx affected:build --base=origin/main~1 --head=HEAD
 
       - name: bump version
-        run: npm run next-version
+        run: npm run bump
 
       - name: check semver dist exists
         id: check_semver_dist
@@ -70,7 +70,7 @@ jobs:
       - name: publish semver
         if: steps.check_semver_dist.outputs.files_exists == 'true'
         working-directory: dist/packages/semver
-        run: npm publish --ignore-scripts --access public --dry-run
+        run: npm publish --ignore-scripts --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

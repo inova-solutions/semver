@@ -2,6 +2,9 @@ import { readFile as _readFile, existsSync } from 'fs';
 import { CONFIG_FILE } from './constants';
 import { getCurrentBranch } from './git-helpers';
 
+/**
+ * Model for the config file `.semver.json`.
+ */
 export interface Config {
   /**
    * Name of the branch that produces the beta builds.
