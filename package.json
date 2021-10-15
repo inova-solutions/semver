@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --watch 'packages/semver/**/*.ts' --exec npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts bump --debug --workspace nx",
-    "publish": "nx build semver && @powershell copy .npmrc dist/packages/semver/.npmrc"
+    "start": "nodemon --watch 'packages/semver/**/*.ts' --exec npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts next-version --debug --workspace nx",
+    "local-build": "nx build semver && @powershell copy .npmrc dist/packages/semver/.npmrc",
+    "next-version": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts next-version --debug --workspace nx",
+    "bump": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts bump --debug --workspace nx"
   },
   "private": true,
   "dependencies": {

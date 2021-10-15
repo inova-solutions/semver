@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -28,3 +28,8 @@ jobs:
         run: npx nx affected:lint --base=origin/main~1 --head=HEAD
       - name: build affected
         run: npx nx affected:build --base=origin/main~1 --head=HEAD
+      - name: preview version
+        run: npm run next-version
+      # - name: publish semver to npm
+      #   working-directory: dist/packages/semver
+      #   run: npm publish
