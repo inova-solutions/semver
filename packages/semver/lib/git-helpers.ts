@@ -122,10 +122,12 @@ export function addGitTag(gitTag: string, commit = 'HEAD'): void {
 /**
  * Commit git changes.
  * @param message Commit message.
+ * @param pushCommit True for pushing the commit.
  */
-export function commit(message: string): void {
+export function commit(message: string, pushCommit = false): void {
   execSync(`git add .`);
   execSync(`git commit -m "${message}"`);
+  if (pushCommit) push();
 }
 
 /**

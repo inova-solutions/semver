@@ -38,8 +38,7 @@ export async function release(options: NextVersionOptions, tags: string[]) {
   }
 
   if (hasChanges) {
-    commit(`chore(release): ${mainVersion}`);
-    push();
+    commit(`chore(release): ${mainVersion}`, true);
   }
 
   // add git tags
