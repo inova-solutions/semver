@@ -49,7 +49,7 @@ Default is set to `true`.
 
 Commit types to ignore.
 
-Default: `ci`, `repo`, `docs`, `test`, `chore`.
+Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`.
 
 ## Commands
 

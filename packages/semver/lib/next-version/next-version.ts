@@ -61,6 +61,17 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   return packageTags;
 }
 
+/**
+ * Gets the current channel.
+ * @param config The semver configuration from `.semver.json`.
+ * @returns The channel name.
+ */
+export async function getChannel(config: Config): Promise<Channel> {
+  if (await isBetaBranch()) return 'beta';
+  else if (await isReleaseBranch()) return config.releaseCandidate ? 'rc' : 'stable';
+  throw new Error(ERRORS.UNKNOWN_BRANCH);
+}
+
 async function lastSemverTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
   if (options.channel === 'beta' || options.channel === 'rc') {
     return await _lastSemverTag(options);
@@ -95,12 +106,6 @@ async function nextVersionNx(
   );
 
   return nextVersionResult.filter((r) => !!r);
-}
-
-async function getChannel(config: Config): Promise<Channel> {
-  if (await isBetaBranch()) return 'beta';
-  else if (await isReleaseBranch()) return config.releaseCandidate ? 'rc' : 'stable';
-  throw new Error(ERRORS.UNKNOWN_BRANCH);
 }
 
 async function writeFile(data: string, path: string) {
