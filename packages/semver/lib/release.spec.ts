@@ -3,6 +3,8 @@ import { release } from './release';
 import { Config, getConfig } from './config';
 import { nextVersion } from './next-version/next-version';
 import { getBranchRelatedTags } from './git-helpers';
+import * as gitHelpers from './git-helpers';
+import * as logger from './logger';
 import { readFile } from 'fs';
 import { join } from 'path';
 import { NextVersionOptions } from './models';
@@ -78,12 +80,41 @@ describe('release', () => {
     await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
     await gitCommits(['feat: a new feature'], { cwd });
 
+    const warnSpy = jest.spyOn(logger, 'warn');
+
     // act
     await testRelease(cwd, config, {});
 
     // assert
     const gitTagsAfterRelease = await getGitTags(cwd);
     expect(gitTagsAfterRelease).not.toContain('1.0.0-beta.2');
+    expect(warnSpy).toHaveBeenCalledWith(
+      `The local branch is behind the remote one, therefore a new version won't be published.`
+    );
+  });
+
+  it('no release if it is a PR', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['feat: a new feature'], { cwd });
+    await push({ cwd });
+
+    jest.spyOn(gitHelpers, 'isPr').mockReturnValue(true);
+    const warnSpy = jest.spyOn(logger, 'warn');
+
+    // act
+    await testRelease(cwd, config, {});
+
+    // assert
+    const gitTagsAfterRelease = await getGitTags(cwd);
+    expect(gitTagsAfterRelease).not.toContain('1.0.0-beta.2');
+    expect(warnSpy).toHaveBeenCalledWith(
+      `This run was triggered by a pull request and therefore a new version won't be published.`
+    );
   });
 });
 

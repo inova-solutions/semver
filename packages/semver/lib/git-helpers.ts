@@ -5,6 +5,8 @@ import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { isBetaBranch, isReleaseBranch } from './config';
 import { Channel } from './next-version/semver-helpers';
 import { ERRORS } from './constants';
+import { VstsEnv } from 'env-ci';
+import * as envCi from 'env-ci';
 
 export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
 
@@ -143,6 +145,15 @@ export function push(): void {
  */
 export async function isBranchUpToDate() {
   return (await getGitHead()) === (await getGitRemoteHead()).match(/^(?<ref>\w+)?/)[1];
+}
+
+/**
+ * Check if is a PR.
+ * @returns `true` if current CI run is a PR build.
+ */
+export function isPr() {
+  const res = envCi();
+  return res.isCi && res.service && (res as VstsEnv).isPr;
 }
 
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
