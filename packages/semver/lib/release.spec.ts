@@ -1,4 +1,4 @@
-import { gitRepo, gitCommits, gitTagVersion, gitCommitFile } from './test/git-utils';
+import { gitRepo, gitCommits, gitTagVersion, gitCommitFile, push } from './test/git-utils';
 import { release } from './release';
 import { Config, getConfig } from './config';
 import { nextVersion } from './next-version/next-version';
@@ -41,6 +41,7 @@ describe('release', () => {
     await gitCommits(['feat: a feat for version 1'], { cwd });
     await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
     await gitCommits(['feat: a new feature'], { cwd });
+    await push({ cwd });
 
     // act
     await testRelease(cwd, config, {});
@@ -58,6 +59,7 @@ describe('release', () => {
     await gitCommits(['feat: a feat for version 1'], { cwd });
     await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
     await gitCommitFile('package.json', 'fix: deps', { cwd }, '{"version": "1.0.0-beta.1"}');
+    await push({ cwd });
 
     // act
     await testRelease(cwd, config, {});
@@ -65,6 +67,23 @@ describe('release', () => {
     // assert
     const packageJson = await readPackageJson(join(cwd, 'package.json'));
     expect(packageJson.version).toEqual('1.0.0-beta.2');
+  });
+
+  it('no release if branch not up to date', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['feat: a new feature'], { cwd });
+
+    // act
+    await testRelease(cwd, config, {});
+
+    // assert
+    const gitTagsAfterRelease = await getGitTags(cwd);
+    expect(gitTagsAfterRelease).not.toContain('1.0.0-beta.2');
   });
 });
 

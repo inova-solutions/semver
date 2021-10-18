@@ -116,6 +116,14 @@ export async function gitCheckout(branch: string, action: 'create' | 'checkout',
 }
 
 /**
+ * Push git commits.
+ * @param execaOptions Options to pass to `execa`.
+ */
+export async function push(execaOptions: execa.Options<string>) {
+  await execa('git', ['push'], { ...execaOptions, stdout: undefined });
+}
+
+/**
  * Initialize an existing bare repository:
  * - Clone the repository
  * - Change the current working directory to the clone root

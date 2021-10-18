@@ -1,8 +1,8 @@
 import { valid as validSemver } from 'semver';
-import { existsSync, readFile, writeFile } from 'fs';
-import { debug } from './logger';
+import { existsSync, readFile, writeFile, rm } from 'fs';
+import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
-import { addGitTag, commit } from './git-helpers';
+import { addGitTag, commit, isBranchUpToDate } from './git-helpers';
 import { NextVersionOptions, NextVersionResult } from './models';
 
 /**
@@ -13,6 +13,15 @@ import { NextVersionOptions, NextVersionResult } from './models';
  */
 export async function release(options: NextVersionOptions, nextVersions: NextVersionResult[]) {
   if (!nextVersions) return;
+
+  // check if branch is up to date
+  const isUpToDate = await isBranchUpToDate();
+  if (!isUpToDate) {
+    warn(`The local branch is behind the remote one, therefore a new version won't be published.`);
+    await cleanOutput(options.outputFile);
+    return;
+  }
+
   debug(options.debug, 'Start with bump...');
   // set the commits author and commiter info and prevent the `git` CLI to prompt for username/password
   setGitAuthor();
@@ -112,4 +121,13 @@ function setGitAuthor() {
   process.env.GIT_AUTHOR_EMAIL = email;
   process.env.GIT_COMMITTER_NAME = author;
   process.env.GIT_COMMITTER_EMAIL = email;
+}
+
+async function cleanOutput(outputFile: string) {
+  return new Promise<void>((resolve, reject) => {
+    if (outputFile && existsSync(outputFile)) {
+      rm(outputFile, (error) => (error ? reject(error) : resolve()));
+    }
+    resolve();
+  });
 }

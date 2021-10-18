@@ -137,6 +137,14 @@ export function push(): void {
   execSync(`git push`);
 }
 
+/**
+ * Check if current local branch is up to date.
+ * @returns `true` if the HEAD of the current local branch is the same as the HEAD of the remote branch, falsy otherwise.
+ */
+export async function isBranchUpToDate() {
+  return (await getGitHead()) === (await getGitRemoteHead()).match(/^(?<ref>\w+)?/)[1];
+}
+
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
   const tags = filterByPrefix(result.split('\n'), options.tagPrefix)
     .map((tag) => validSemver(tag))
@@ -176,4 +184,30 @@ function filterByPrefix(tags: string[], tagPrefix: string): string[] {
   return tags
     .filter((tag) => !tagPrefix || (tagPrefix && tag.startsWith(tagPrefix)))
     .map((tag) => (tagPrefix ? tag.replace(tagPrefix, '') : tag));
+}
+
+async function getGitHead() {
+  const cmd = 'git rev-parse HEAD';
+  return new Promise<string>((resolve, reject) => {
+    exec(cmd, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+}
+
+async function getGitRemoteHead() {
+  const cmd = 'git ls-remote --heads';
+  return new Promise<string>((resolve, reject) => {
+    exec(cmd, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
 }
