@@ -25,6 +25,7 @@ export function addOptions(cmd: Command): Command {
       'You can pass "major", "minor" or "patch" if you want to override the recommended bump by conventional commit analyzer'
     )
     .option('--path <path>', 'Specify the path to calculate recommended bump only with git commits related to the path')
+    .option( '-f, --outputFile <filePath>', 'Path to the file into which the output should be written')
     .option('-d, --debug', 'Output debugging information');
 }
 
@@ -32,5 +33,5 @@ async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
 
   const version = await nextVersion(config, options);
-  if (version) info(`next version(s): ${chalk.greenBright.bold(version.join(', '))}`);
+  if (version) info(`next version(s): ${chalk.greenBright.bold(version.map((v) => v.tag).join(', '))}`);
 }

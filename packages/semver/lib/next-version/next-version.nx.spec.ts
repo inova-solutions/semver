@@ -1,7 +1,10 @@
 import { gitTagVersion, gitCommitFile } from '../test/git-utils';
-import { nextVersion, NextVersionOptions } from './next-version';
+import { nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { createWorkspace, generateLibrary } from '../test/nx-utils';
+import { NextVersionOptions, NextVersionResult } from '../models';
+import { readFile as _readFile } from 'fs';
+import { join } from 'path';
 
 let workspacePath;
 
@@ -22,15 +25,32 @@ describe('nextVersion in main, for nx workspace', () => {
     const config = await getConfig();
     const cwd = workspacePath;
     // act
-    const version = await testNextVersion(cwd, config, {
+    const versions = await testNextVersion(cwd, config, {
       workspace: 'nx',
     });
 
     // assert
-    expect(version).toContain('1.0.0-beta.1');
-    expect(version).toContain('lib-a/1.0.0-beta.1');
-    expect(version).toContain('lib-b/1.0.0-beta.1');
-    expect(version).toContain('lib-c/1.0.0-beta.1');
+    expect(versions.sort((a, b) => sortByProject(a, b))).toEqual<NextVersionResult[]>([
+      { version: '1.0.0-beta.1', tag: '1.0.0-beta.1' },
+      { version: '1.0.0-beta.1', tag: 'lib-a/1.0.0-beta.1', project: 'lib-a' },
+      { version: '1.0.0-beta.1', tag: 'lib-b/1.0.0-beta.1', project: 'lib-b' },
+      { version: '1.0.0-beta.1', tag: 'lib-c/1.0.0-beta.1', project: 'lib-c' },
+    ]);
+  });
+
+  it('write output file works', async () => {
+    // arrange
+    const config = await getConfig();
+    const cwd = workspacePath;
+    // act
+    const versions = await testNextVersion(cwd, config, {
+      workspace: 'nx',
+      outputFile: 'out.json',
+    });
+
+    // assert
+    const fileContent = await readFile<NextVersionResult[]>(join(cwd, 'out.json'));
+    expect(versions).toEqual(fileContent);
   });
 
   it('a new feat for lib-b', async () => {
@@ -46,13 +66,18 @@ describe('nextVersion in main, for nx workspace', () => {
     await gitCommitFile('packages/lib-b/src/feat-1.ts', 'fix(lib-b): a new feat in the b lib', { cwd });
 
     // act
-    const version = await testNextVersion(cwd, config, {
+    const versions = await testNextVersion(cwd, config, {
       workspace: 'nx',
     });
 
     // assert
-    expect(version).toContain('1.0.0-beta.2');
-    expect(version).toContain('lib-b/1.0.0-beta.2');
+    const sortedResult = versions.sort((a, b) => sortByProject(a, b));
+    expect(sortedResult[0]).toEqual<NextVersionResult>({ tag: '1.0.0-beta.2', version: '1.0.0-beta.2' });
+    expect(sortedResult[1]).toEqual<NextVersionResult>({
+      tag: 'lib-b/1.0.0-beta.2',
+      version: '1.0.0-beta.2',
+      project: 'lib-b',
+    });
   });
 
   it('a new feat for lib-c with tagPrefix', async () => {
@@ -68,14 +93,19 @@ describe('nextVersion in main, for nx workspace', () => {
     await gitCommitFile('packages/lib-c/src/feat-1c.ts', 'fix(lib-c): a new feat in the c lib', { cwd });
 
     // act
-    const version = await testNextVersion(cwd, config, {
+    const versions = await testNextVersion(cwd, config, {
       workspace: 'nx',
-      tagPrefix: 'v'
+      tagPrefix: 'v',
     });
 
     // assert
-    expect(version).toContain('v1.0.0-beta.2');
-    expect(version).toContain('lib-c/v1.0.0-beta.2');
+    const sortedResult = versions.sort((a, b) => sortByProject(a, b));
+    expect(sortedResult[0]).toEqual<NextVersionResult>({ tag: 'v1.0.0-beta.2', version: '1.0.0-beta.2' });
+    expect(sortedResult[1]).toEqual<NextVersionResult>({
+      tag: 'lib-c/v1.0.0-beta.2',
+      version: '1.0.0-beta.2',
+      project: 'lib-c',
+    });
   });
 });
 
@@ -94,4 +124,25 @@ async function initWorkspace() {
   await generateLibrary('lib-a', workspacePath);
   await generateLibrary('lib-b', workspacePath);
   await generateLibrary('lib-c', workspacePath);
+}
+
+async function readFile<T>(path: string) {
+  return new Promise<T>((resolve, reject) => {
+    _readFile(path, (error, data) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(JSON.parse(data.toString()));
+    });
+  });
+}
+
+function sortByProject(a: NextVersionResult, b: NextVersionResult) {
+  const projectA = (a.project ?? '').toUpperCase();
+  const projectB = (b.project ?? '').toUpperCase();
+
+  if (projectA < projectB) return -1;
+  if (projectA > projectB) return 1;
+  return 0;
 }

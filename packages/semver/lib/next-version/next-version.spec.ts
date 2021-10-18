@@ -1,7 +1,8 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile } from '../test/git-utils';
-import { nextVersion, NextVersionOptions } from './next-version';
+import { nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { ERRORS } from '../constants';
+import { NextVersionOptions } from '../models';
 
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -56,7 +57,9 @@ describe('nextVersion in main, no release branch exists', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-beta.1');
+    expect(version[0].tag).toEqual('1.0.0-beta.1');
+    expect(version[0].version).toEqual('1.0.0-beta.1');
+    expect(version[0].project).toBeUndefined();
   });
 
   it('second feature, should tag with 1.0.0-beta.2', async () => {
@@ -72,7 +75,7 @@ describe('nextVersion in main, no release branch exists', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-beta.2');
+    expect(version[0].tag).toEqual('1.0.0-beta.2');
   });
 
   it('breaking change, should tag with 1.0.0-beta.2', async () => {
@@ -94,7 +97,7 @@ describe('nextVersion in main, no release branch exists', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-beta.2');
+    expect(version[0].tag).toEqual('1.0.0-beta.2');
   });
 });
 
@@ -122,7 +125,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.1-beta.1');
+    expect(version[0].tag).toEqual('1.0.1-beta.1');
   });
 
   it('new feat should be 1.1.0-beta.1, after rc build 1.0.0-rc.1', async () => {
@@ -141,7 +144,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.1.0-beta.1');
+    expect(version[0].tag).toEqual('1.1.0-beta.1');
   });
 
   it('another new feat should be 1.1.0-beta.2, after rc build 1.0.0-rc.1', async () => {
@@ -162,7 +165,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.1.0-beta.2');
+    expect(version[0].tag).toEqual('1.1.0-beta.2');
   });
 
   it('breaking change should be 2.0.0-beta.1, after rc build 1.0.0-rc.1', async () => {
@@ -188,7 +191,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('2.0.0-beta.1');
+    expect(version[0].tag).toEqual('2.0.0-beta.1');
   });
 
   it('patch after breaking change should be 2.0.0-beta.2, when rc build is 1.0.0-rc.1', async () => {
@@ -216,7 +219,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('2.0.0-beta.2');
+    expect(version[0].tag).toEqual('2.0.0-beta.2');
   });
 });
 
@@ -247,7 +250,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.1-beta.1');
+    expect(version[0].tag).toEqual('1.0.1-beta.1');
   });
 
   it('new feat should be 1.1.0-beta.1, after stable build 1.0.0', async () => {
@@ -269,7 +272,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.1.0-beta.1');
+    expect(version[0].tag).toEqual('1.1.0-beta.1');
   });
 
   it('another new feat should be 1.1.0-beta.2, after stable build 1.0.0', async () => {
@@ -293,7 +296,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.1.0-beta.2');
+    expect(version[0].tag).toEqual('1.1.0-beta.2');
   });
 
   it('breaking change should be 2.0.0-beta.1, after stable build 1.0.0', async () => {
@@ -320,7 +323,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('2.0.0-beta.1');
+    expect(version[0].tag).toEqual('2.0.0-beta.1');
   });
 
   it('patch after breaking change should be 2.0.0-beta.2, when stable build is 1.0.0', async () => {
@@ -349,7 +352,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('2.0.0-beta.2');
+    expect(version[0].tag).toEqual('2.0.0-beta.2');
   });
 });
 
@@ -376,7 +379,7 @@ describe('nextVersion in release, rc mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-rc.1');
+    expect(version[0].tag).toEqual('1.0.0-rc.1');
   });
 
   it('patch should not increment minor, only rc build no', async () => {
@@ -395,7 +398,7 @@ describe('nextVersion in release, rc mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-rc.2');
+    expect(version[0].tag).toEqual('1.0.0-rc.2');
   });
 
   it('feat should not increment minor, only rc build no', async () => {
@@ -414,7 +417,7 @@ describe('nextVersion in release, rc mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-rc.2');
+    expect(version[0].tag).toEqual('1.0.0-rc.2');
   });
 
   it('feat should not increment minor, only rc build no, even beta has already next major', async () => {
@@ -444,7 +447,7 @@ describe('nextVersion in release, rc mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0-rc.3');
+    expect(version[0].tag).toEqual('1.0.0-rc.3');
   });
 });
 
@@ -474,7 +477,7 @@ describe('nextVersion in release, stable mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.0');
+    expect(version[0].tag).toEqual('1.0.0');
   });
 
   it('fix should increment patch in stable mode', async () => {
@@ -496,7 +499,7 @@ describe('nextVersion in release, stable mode is enabled', () => {
     const version = await testNextVersion(cwd, config, {});
 
     // assert
-    expect(version[0]).toEqual('1.0.1');
+    expect(version[0].tag).toEqual('1.0.1');
   });
 
   it('new features are not allowed', async () => {
@@ -539,7 +542,9 @@ describe('nextVersion in main, with tagPrefix', () => {
     const version = await testNextVersion(cwd, config, { tagPrefix: 'v' });
 
     // assert
-    expect(version[0]).toEqual('v1.0.0-beta.2');
+    expect(version[0].tag).toEqual('v1.0.0-beta.2');
+    expect(version[0].version).toEqual('1.0.0-beta.2');
+    expect(version[0].project).toBeUndefined();
   });
 
   it('breaking change, should tag with v1.0.0-beta.2', async () => {
@@ -560,7 +565,7 @@ describe('nextVersion in main, with tagPrefix', () => {
     const version = await testNextVersion(cwd, config, { tagPrefix: 'v' });
 
     // assert
-    expect(version[0]).toEqual('v1.0.0-beta.2');
+    expect(version[0].tag).toEqual('v1.0.0-beta.2');
   });
 
   it('multiple prefixes works', async () => {
@@ -576,7 +581,9 @@ describe('nextVersion in main, with tagPrefix', () => {
     const version = await testNextVersion(cwd, config, { tagPrefix: 'app1/' });
 
     // assert
-    expect(version[0]).toEqual('app1/1.0.0-beta.2');
+    expect(version[0].tag).toEqual('app1/1.0.0-beta.2');
+    expect(version[0].version).toEqual('1.0.0-beta.2');
+    expect(version[0].project).toBeUndefined();
   });
 });
 
@@ -601,7 +608,7 @@ describe('nextVersion in main, with tagPrefix and path', () => {
     const version = await testNextVersion(cwd, config, { tagPrefix: 'first-app/', path: 'apps/first-app' });
 
     // assert
-    expect(version[0]).toEqual('first-app/1.0.0-beta.1');
+    expect(version[0].tag).toEqual('first-app/1.0.0-beta.1');
   });
 
   it('patch for a specific path after rc release', async () => {
@@ -620,7 +627,7 @@ describe('nextVersion in main, with tagPrefix and path', () => {
     const version = await testNextVersion(cwd, config, { tagPrefix: 'first-app/', path: 'apps/first-app' });
 
     // assert
-    expect(version[0]).toEqual('first-app/1.0.1-beta.1');
+    expect(version[0].tag).toEqual('first-app/1.0.1-beta.1');
   });
 });
 

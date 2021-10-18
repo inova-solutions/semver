@@ -1,10 +1,11 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCommitFile } from './test/git-utils';
 import { release } from './release';
 import { Config, getConfig } from './config';
-import { nextVersion, NextVersionOptions } from './next-version/next-version';
+import { nextVersion } from './next-version/next-version';
 import { getBranchRelatedTags } from './git-helpers';
 import { readFile } from 'fs';
 import { join } from 'path';
+import { NextVersionOptions } from './models';
 
 describe('release', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -65,7 +66,6 @@ describe('release', () => {
     const packageJson = await readPackageJson(join(cwd, 'package.json'));
     expect(packageJson.version).toEqual('1.0.0-beta.2');
   });
-
 });
 
 async function testRelease(cwd: string, config: Config, options: NextVersionOptions) {
