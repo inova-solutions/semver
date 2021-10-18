@@ -2,6 +2,16 @@
 
 CLI for managing semantic versioning in git repos.
 
+## Installation
+
+**Local :**
+For [node](https://nodejs.org/en/about/) projects we recommend installing @inova/semver locally and running the semver command with npx: `npm install --save-dev @inova/semver`
+
+Then in the CI environment: `npx semver bump`
+
+**Global :**
+For other project types you can install @inova/semver globally:  `npm install -g @inova/semver`
+
 ## Configuration
 
 You can create a `.semver.json` file in the root dir of your workspace, if you like to override the default configuration.
@@ -40,3 +50,9 @@ Default is set to `true`.
 Commit types to ignore.
 
 Default: `ci`, `repo`, `docs`, `test`, `chore`.
+
+## Commands
+
+To show the commands list you can run  `npx semver --help` or just `semver --help` if you installed @inova/semver globally.
+
+To see what options the command support run `semver [command] -h` eg. `semver bump -h`.

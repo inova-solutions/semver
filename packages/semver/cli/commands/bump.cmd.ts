@@ -7,7 +7,7 @@ import { addOptions as addNextVersionOptions } from './next-version.cmd';
  * @param program CLI program
  */
 export function addBumpCmd(program: Command) {
-  addNextVersionOptions(program.command('bump').description('Bump version')).action(handleCommand);
+  addNextVersionOptions(program.command('bump').description('Creates the pending release. Adds the next version tags to git')).action(handleCommand);
 }
 
 async function handleCommand(options: NextVersionOptions) {

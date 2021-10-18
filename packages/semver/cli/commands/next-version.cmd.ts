@@ -22,7 +22,7 @@ export function addOptions(cmd: Command): Command {
     .option('-p, --tagPrefix <prefix>', 'Specify a prefix for the git tag to be ignored from the semver checks')
     .option(
       '-b, --bump <bumpType>',
-      'You can pass "major", "minor" or "patch" if you want to override the recommended bump by conventional commit analyzer'
+      'Override the recommended bump by conventional commit analyzer by passing "major", "minor" or "patch"'
     )
     .option('--path <path>', 'Specify the path to calculate recommended bump only with git commits related to the path')
     .option( '-f, --outputFile <filePath>', 'Path to the file into which the output should be written')

@@ -8,7 +8,7 @@ import { getBranchRelatedTags, getAllTags } from '../../lib';
 export function addListCmd(program: Command) {
   program
     .command('list')
-    .description('show existing tags in your repo')
+    .description('Show existing tags in your repo')
     .option('-a, --all', 'show all semver tags')
     .option('-b, --branch', 'show branch related semver tags')
     .action(handleCommand);
