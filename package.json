@@ -1,6 +1,6 @@
 {
   "name": "inova",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "license": "MIT",
   "scripts": {
     "start": "nodemon --watch 'packages/semver/**/*.ts' --exec npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts next-version --debug --workspace nx",
