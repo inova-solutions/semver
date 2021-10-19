@@ -124,6 +124,15 @@ export async function push(execaOptions: execa.Options<string>) {
 }
 
 /**
+ * Gets the ID of the last git commit.
+ * @param execaOptions  Options to pass to `execa`.
+ * @returns Commit ID.
+ */
+export async function getLastCommit(execaOptions: execa.Options<string>) {
+  return (await execa('git', ['log', '--branches', '-1', '--pretty=format:%H'], execaOptions)).stdout.trim();
+}
+
+/**
  * Initialize an existing bare repository:
  * - Clone the repository
  * - Change the current working directory to the clone root

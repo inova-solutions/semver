@@ -1,9 +1,10 @@
-import { gitRepo, gitCommits, gitTagVersion, gitCommitFile, push } from './test/git-utils';
+import { gitRepo, gitCommits, gitTagVersion, gitCommitFile, push, gitCheckout, getLastCommit } from './test/git-utils';
 import { release } from './release';
 import { Config, getConfig } from './config';
 import { nextVersion } from './next-version/next-version';
 import { getBranchRelatedTags } from './git-helpers';
 import * as logger from './logger';
+import * as gitHelpers from './git-helpers';
 import { readFile } from 'fs';
 import { join } from 'path';
 import { NextVersionOptions } from './models';
@@ -90,6 +91,29 @@ describe('release', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       `The local branch is behind the remote one, therefore a new version won't be published.`
     );
+  });
+
+  it('push on detached head works', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['feat: a new feature'], { cwd });
+    await gitCommitFile('package.json', 'fix: deps', { cwd }, '{"version": "1.0.0-beta.1"}');
+    await gitCommits(['feat: more features', 'feat: and more features'], { cwd });
+    await push({ cwd });
+    await gitCheckout(await getLastCommit({ cwd }), 'checkout', { cwd });
+
+    jest.spyOn(gitHelpers, 'getCurrentBranch').mockResolvedValue('main');
+
+    // act
+    await testRelease(cwd, config, {});
+
+    // assert
+    const gitTagsAfterRelease = await getGitTags(cwd);
+    expect(gitTagsAfterRelease).toContain('1.0.0-beta.2');
   });
 });
 

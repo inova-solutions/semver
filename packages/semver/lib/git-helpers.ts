@@ -136,7 +136,8 @@ export function commit(message: string, pushCommit = false): void {
  * Push git changes.
  */
 export function push(): void {
-  execSync(`git push`);
+  const repoUrl = execSync(`git config --get remote.origin.url`).toString().trim();
+  execSync(`git push --tags ${repoUrl}`);
 }
 
 /**
