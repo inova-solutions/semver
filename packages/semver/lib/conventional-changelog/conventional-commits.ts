@@ -8,8 +8,8 @@ import { Commit } from 'conventional-commits-parser';
 import { Callback, Options as BumpOptions } from 'conventional-recommended-bump';
 import { presetResolver, PresetResolverResult } from './preset-resolver';
 import { lastSemverTag } from '../git-helpers';
-import { Channel } from '../next-version/semver-helpers';
 import { debug, warn } from '../logger';
+import { ReleaseType, Channel } from '../models';
 
 const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
 type Options = Omit<BumpOptions, 'ignoreReverted' | 'skipUnstable' | 'config'> & {
@@ -17,7 +17,6 @@ type Options = Omit<BumpOptions, 'ignoreReverted' | 'skipUnstable' | 'config'> &
   debug?: boolean;
   commitTypesToIgnore?: string[];
 };
-export type ReleaseType = Callback.Recommendation.ReleaseType;
 
 /**
  * Get a recommended version bump based on conventional commits.

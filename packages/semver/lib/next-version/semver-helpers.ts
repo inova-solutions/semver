@@ -1,8 +1,5 @@
 import { SemVer, valid as validSemver, gt as gtSemver, inc as incSemver, eq as eqSemver } from 'semver';
-import { Callback as Bump } from 'conventional-recommended-bump';
-
-export type Channel = 'stable' | 'rc' | 'beta';
-type ReleaseType = Bump.Recommendation.ReleaseType;
+import { Channel, ReleaseType } from '../models';
 
 /**
  * Calculate the next version based on the current tag and last release.

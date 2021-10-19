@@ -3,10 +3,10 @@ import * as _gitSemverTags from 'git-semver-tags';
 import { exec, execSync } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { isBetaBranch, isReleaseBranch } from './config';
-import { Channel } from './next-version/semver-helpers';
 import { ERRORS } from './constants';
 import { VstsEnv } from 'env-ci';
 import * as envCi from 'env-ci';
+import { Channel } from './models';
 
 export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
 

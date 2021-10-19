@@ -2,11 +2,11 @@ import chalk from 'chalk';
 import { Config, isBetaBranch, isReleaseBranch } from '../config';
 import { conventionalRecommendedBump } from '../conventional-changelog/conventional-commits';
 import { getAllTags, isPr, lastSemverTag as _lastSemverTag } from '../git-helpers';
-import { Channel, increment } from './semver-helpers';
+import { increment } from './semver-helpers';
 import { debug, info, warn } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
 import { ERRORS } from '../constants';
-import { NextVersionOptions, NextVersionResult } from '../models';
+import { NextVersionOptions, NextVersionResult, Channel } from '../models';
 import { writeFile as _writeFile } from 'fs';
 
 /**

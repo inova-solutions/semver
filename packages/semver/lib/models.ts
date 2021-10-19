@@ -1,4 +1,13 @@
-import { ReleaseType } from './conventional-changelog/conventional-commits';
+import { Callback } from 'conventional-recommended-bump';
+
+/**
+ * Type of version bump, `major`, `minor` or `patch`.
+ */
+export type ReleaseType = Callback.Recommendation.ReleaseType;
+/**
+ * Release channel `beta`, `rc` or `stable`.
+ */
+export type Channel = 'stable' | 'rc' | 'beta';
 
 export interface NextVersionOptions {
   tagPrefix?: string;
