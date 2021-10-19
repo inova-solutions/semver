@@ -1,8 +1,10 @@
-import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile } from '../test/git-utils';
+import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile, push } from '../test/git-utils';
 import { nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { ERRORS } from '../constants';
 import { NextVersionOptions } from '../models';
+import * as gitHelpers from '../git-helpers';
+import * as logger from '../logger';
 
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -649,6 +651,29 @@ describe('nextVersion unknown branch', () => {
 
     // act & assert
     await expect(testNextVersion(cwd, config, {})).rejects.toThrow(ERRORS.UNKNOWN_BRANCH);
+  });
+
+  it('no next version in a PR', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['feat: a new feature'], { cwd });
+    await push({ cwd });
+
+    jest.spyOn(gitHelpers, 'isPr').mockReturnValue(true);
+    const warnSpy = jest.spyOn(logger, 'warn');
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      `This run was triggered by a pull request and therefore a new version won't be published.`
+    );
   });
 });
 

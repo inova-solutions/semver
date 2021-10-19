@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 import { Config, isBetaBranch, isReleaseBranch } from '../config';
 import { conventionalRecommendedBump } from '../conventional-changelog/conventional-commits';
-import { getAllTags, lastSemverTag as _lastSemverTag } from '../git-helpers';
+import { getAllTags, isPr, lastSemverTag as _lastSemverTag } from '../git-helpers';
 import { Channel, increment } from './semver-helpers';
-import { debug, info } from '../logger';
+import { debug, info, warn } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
 import { ERRORS } from '../constants';
 import { NextVersionOptions, NextVersionResult } from '../models';
@@ -17,6 +17,12 @@ import { writeFile as _writeFile } from 'fs';
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
 export async function nextVersion(config: Config, options: NextVersionOptions): Promise<NextVersionResult[]> {
+  // check if is a PR
+  if (isPr()) {
+    warn(`This run was triggered by a pull request and therefore a new version won't be published.`);
+    return null;
+  }
+
   const channel: Channel = await getChannel(config);
   const tagPrefix = options.tagPrefix;
 

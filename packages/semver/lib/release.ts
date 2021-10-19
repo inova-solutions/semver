@@ -2,7 +2,7 @@ import { valid as validSemver } from 'semver';
 import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
-import { addGitTag, commit, isBranchUpToDate, isPr } from './git-helpers';
+import { addGitTag, commit, isBranchUpToDate } from './git-helpers';
 import { NextVersionOptions, NextVersionResult } from './models';
 
 /**
@@ -17,13 +17,6 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
   // check if branch is up to date
   if (!(await isBranchUpToDate())) {
     warn(`The local branch is behind the remote one, therefore a new version won't be published.`);
-    await cleanOutput(options.outputFile);
-    return;
-  }
-
-  // check if is a PR
-  if (isPr()) {
-    warn(`This run was triggered by a pull request and therefore a new version won't be published.`);
     await cleanOutput(options.outputFile);
     return;
   }
