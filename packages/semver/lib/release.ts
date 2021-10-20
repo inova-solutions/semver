@@ -42,7 +42,11 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
   }
 
   if (hasChanges) {
-    commit(`chore(release): ${mainVersion.tag}`);
+    commit(
+      `chore(release): ${mainVersion.tag}
+[skip ci]
+    `
+    );
     await push();
   }
 
