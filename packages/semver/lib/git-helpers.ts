@@ -122,22 +122,32 @@ export function addGitTag(gitTag: string, commit = 'HEAD'): void {
 }
 
 /**
+ * Gets the branch name from origin.
+ */
+export function getOrigin() {
+  execSync(`git for-each-ref --format='%(upstream:short)' "$(git symbolic-ref -q HEAD)"`).toString().trim();
+}
+
+/**
  * Commit git changes.
  * @param message Commit message.
- * @param pushCommit True for pushing the commit.
  */
-export function commit(message: string, pushCommit = false): void {
+export function commit(message: string): void {
   execSync(`git add .`);
   execSync(`git commit -m "${message}"`);
-  if (pushCommit) push();
 }
 
 /**
  * Push git changes.
  */
-export function push(): void {
-  const repoUrl = execSync(`git config --get remote.origin.url`).toString().trim();
-  execSync(`git push --tags ${repoUrl}`);
+export async function push(): Promise<void> {
+  if (await isDetachedHead()) {
+    const branch = await getCurrentBranch();
+    execSync(`git push origin HEAD:${branch}`);
+  } else {
+    const repoUrl = execSync(`git config --get remote.origin.url`).toString().trim();
+    execSync(`git push --tags ${repoUrl}`);
+  }
 }
 
 /**
@@ -157,6 +167,23 @@ export function isPr() {
   return res.isCi && res.service && (res as VstsEnv).isPr;
 }
 
+/**
+ * Check if HEAD is detached.
+ * @returns Returns `true` if HEAD is detached.
+ */
+export async function isDetachedHead(): Promise<boolean> {
+  const cmd = 'git rev-parse --abbrev-ref HEAD';
+  return new Promise<boolean>((resolve, reject) => {
+    exec(cmd, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(stdout.trim() === 'HEAD');
+    });
+  });
+}
+
 function parseGitTagResult(result: string, options: SemverTagOptions): string[] {
   const tags = filterByPrefix(result.split('\n'), options.tagPrefix)
     .map((tag) => validSemver(tag))
@@ -165,21 +192,27 @@ function parseGitTagResult(result: string, options: SemverTagOptions): string[] 
 }
 
 async function getBranchHeadDetached(): Promise<string> {
-  const cmd = 'git show -s --pretty=%d HEAD';
+  const runCMD = (cmd) =>
+    new Promise<string>((resolve, reject) => {
+      exec(cmd, (error, stdout) => {
+        if (error) reject(error);
 
-  return new Promise<string>((resolve, reject) => {
-    exec(cmd, (error, stdout) => {
-      if (error) reject(error);
+        const branch = stdout
+          .replace('(', '')
+          .replace(')', '')
+          .split(', ')
+          .map((r) => r.trim())
+          .find((branch) => branch.startsWith('origin/') || branch.startsWith('upstream/'));
 
-      const branch = stdout
-        .replace('(', '')
-        .replace(')', '')
-        .split(', ')
-        .find((branch) => branch.startsWith('origin/') || branch.startsWith('upstream/'));
-
-      resolve(branch ? branch.match(/^(origin|upstream)\/(?<branch>.+)/)[2] : undefined);
+        resolve(branch ? branch.match(/^(origin|upstream)\/(?<branch>.+)/)[2] : undefined);
+      });
     });
-  });
+
+  let branchName = await runCMD('git show -s --pretty=%d HEAD');
+  // try with previous commit if branch not found
+  if (!branchName) branchName = await runCMD('git show -s --pretty=%d HEAD~1');
+
+  return branchName;
 }
 
 function filterByChannel(tags: string[], channel: Channel): string[] {

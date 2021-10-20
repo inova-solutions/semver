@@ -24,7 +24,12 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nrwl/nx/typescript"],
-      "rules": {}
+      "parserOptions": {
+        "project": ["tsconfig.*?.json"]
+      },
+      "rules": {
+        "@typescript-eslint/no-floating-promises": ["error"]
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

@@ -9,7 +9,7 @@ import { CLI_NAME, getGitVersion, MIN_GIT_VERSION } from '../lib';
 import { version } from '../package.json';
 import { addBumpCmd } from './commands/bump.cmd';
 
-main();
+void main();
 
 async function main() {
   try {

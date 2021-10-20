@@ -2,7 +2,7 @@ import { valid as validSemver } from 'semver';
 import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
-import { addGitTag, commit, isBranchUpToDate } from './git-helpers';
+import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
 import { NextVersionOptions, NextVersionResult } from './models';
 
 /**
@@ -42,7 +42,8 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
   }
 
   if (hasChanges) {
-    commit(`chore(release): ${mainVersion.tag}`, true);
+    commit(`chore(release): ${mainVersion.tag}`);
+    await push();
   }
 
   // add git tags

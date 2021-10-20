@@ -96,6 +96,7 @@ describe('release', () => {
   it('push on detached head works', async () => {
     // arrange
     const config = await getConfig();
+    jest.spyOn(gitHelpers, 'getCurrentBranch').mockImplementation(() => new Promise((resolve) => resolve('main')));
 
     const { cwd } = await gitRepo(true);
     await gitCommits(['feat: a feat for version 1'], { cwd });
@@ -106,10 +107,8 @@ describe('release', () => {
     await push({ cwd });
     await gitCheckout(await getLastCommit({ cwd }), 'checkout', { cwd });
 
-    jest.spyOn(gitHelpers, 'getCurrentBranch').mockResolvedValue('main');
-
     // act
-    await testRelease(cwd, config, {});
+    await testRelease(cwd, config, { bump: 'minor' });
 
     // assert
     const gitTagsAfterRelease = await getGitTags(cwd);
