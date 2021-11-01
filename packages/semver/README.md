@@ -41,7 +41,7 @@ Check [conventional-changelog-preset-loader](https://github.com/conventional-cha
 **_releaseCandidate_**
 
 Indicates whether the current branch produces rc builds.
-This is only relevant for release branches. Set this to `false` for producing stable builds from your release branch
+This is only relevant for release branches. Set this to `false` to produce stable builds from your release branch
 
 Default is set to `true`.
 
@@ -49,7 +49,7 @@ Default is set to `true`.
 
 Commit types to ignore.
 
-Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`.
+Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`.
 
 ## Commands
 

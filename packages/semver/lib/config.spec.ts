@@ -10,7 +10,7 @@ describe('config, read', () => {
       releaseBranchName: 'releases/*',
       commitMessageFormat: 'angular',
       releaseCandidate: true,
-      commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`, `refactor`],
+      commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`],
     });
   });
   it('config merge with defaults works', async () => {

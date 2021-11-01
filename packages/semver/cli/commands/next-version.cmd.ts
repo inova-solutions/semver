@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { nextVersion, getConfig, NextVersionOptions, getCurrentBranch } from '../../lib';
+import { nextVersion, getConfig, NextVersionOptions } from '../../lib';
 import { info } from '../../lib/logger';
 
 /**
@@ -31,10 +31,6 @@ export function addOptions(cmd: Command): Command {
 
 async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
-
-  if (options.debug) {
-    info(`current branch: ${await getCurrentBranch()}`);
-  }
 
   const version = await nextVersion(config, options);
   if (version) info(`next version(s): ${chalk.greenBright.bold(version.map((v) => v.tag).join(', '))}`);

@@ -31,7 +31,7 @@ export interface Config {
   releaseCandidate: boolean;
   /**
    * Commit types to ignore.
-   * Default: `ci`, `repo`, `docs`, `test`, `chore`
+   * Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`
    */
   commitTypesToIgnore?: string[];
 }
@@ -46,7 +46,7 @@ export async function getConfig(): Promise<Config> {
     releaseBranchName: 'releases/*',
     commitMessageFormat: 'angular',
     releaseCandidate: true,
-    commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`, `refactor`],
+    commitTypesToIgnore: [`ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`],
   };
 
   let config: Config = defaultConfig;

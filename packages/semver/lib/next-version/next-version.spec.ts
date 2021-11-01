@@ -48,6 +48,23 @@ describe('nextVersion in main, no release branch exists', () => {
     expect(version).toBeNull();
   });
 
+  it('no relevant commits since last release', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['build: should not bump'], { cwd });
+
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version).toBeNull();
+  });
+
   it('first feat, should tag with 1.0.0-beta.1', async () => {
     // arrange
     const config = await getConfig();
