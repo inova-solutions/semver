@@ -7,6 +7,7 @@ import { ERRORS } from './constants';
 import { VstsEnv } from 'env-ci';
 import * as envCi from 'env-ci';
 import { Channel } from './models';
+import { warn } from './logger';
 
 export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
 
@@ -207,6 +208,15 @@ async function getBranchHeadDetached(): Promise<string> {
         resolve(branch ? branch.match(/^(origin|upstream)\/(?<branch>.+)/)[2] : undefined);
       });
     });
+
+  let res: envCi.CiEnv;
+  try {
+    res = envCi();
+  } catch (error) {
+    warn(error);
+  }
+
+  if(res?.branch) return res.branch;
 
   let branchName = await runCMD('git show -s --pretty=%d HEAD');
   // try with previous commit if branch not found

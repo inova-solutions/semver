@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { nextVersion, getConfig, NextVersionOptions } from '../../lib';
+import { nextVersion, getConfig, NextVersionOptions, getCurrentBranch } from '../../lib';
 import { info } from '../../lib/logger';
 
 /**
@@ -25,12 +25,16 @@ export function addOptions(cmd: Command): Command {
       'Override the recommended bump by conventional commit analyzer by passing "major", "minor" or "patch"'
     )
     .option('--path <path>', 'Specify the path to calculate recommended bump only with git commits related to the path')
-    .option( '-f, --outputFile <filePath>', 'Path to the file into which the output should be written')
+    .option('-f, --outputFile <filePath>', 'Path to the file into which the output should be written')
     .option('-d, --debug', 'Output debugging information');
 }
 
 async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
+
+  if (options.debug) {
+    info(`current branch: ${await getCurrentBranch()}`);
+  }
 
   const version = await nextVersion(config, options);
   if (version) info(`next version(s): ${chalk.greenBright.bold(version.map((v) => v.tag).join(', '))}`);
