@@ -156,7 +156,9 @@ export async function push(): Promise<void> {
  * @returns `true` if the HEAD of the current local branch is the same as the HEAD of the remote branch, falsy otherwise.
  */
 export async function isBranchUpToDate() {
-  return (await getGitHead()) === (await getGitRemoteHead()).match(/^(?<ref>\w+)?/)[1];
+  const branch = (await getCurrentBranch()).replace('.', '\\.');
+  const exp = '^(?<ref>\\w+)\\s+.*' + branch + '.*$';
+  return (await getGitHead()) === (await getGitRemoteHead()).match(new RegExp(exp, 'm'))[1];
 }
 
 /**
@@ -216,7 +218,7 @@ async function getBranchHeadDetached(): Promise<string> {
     warn(error);
   }
 
-  if(res?.branch) return res.branch;
+  if (res?.branch) return res.branch;
 
   let branchName = await runCMD('git show -s --pretty=%d HEAD');
   // try with previous commit if branch not found
