@@ -22,7 +22,6 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
     warn(`This run was triggered by a pull request and therefore a new version won't be published.`);
     return null;
   }
-
   const channel: Channel = await getChannel(config);
   const tagPrefix = options.tagPrefix;
 
@@ -100,18 +99,25 @@ async function nextVersionNx(
 ): Promise<NextVersionResult[]> {
   const mainTagPrefix = options.tagPrefix ? options.tagPrefix : '';
   const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
-  const nextVersionResult = await Promise.all(
-    projects.map(async (p) => {
-      info(`run for ${chalk.bold(p)}`);
-      const result = await nextVersion(config, {
-        debug: options.debug,
-        tagPrefix: `${p}/${mainTagPrefix}`,
-        bump: options.bump,
-      });
-      if (result?.length) return { project: p, tag: result[0].tag, version: result[0].version };
-      return null;
-    })
-  );
+  const nextVersionResult: NextVersionResult[] = [];
+
+  const getNextVersion = async (project: string) => {
+    info(`run for ${chalk.bold(project)}`);
+    const result = await nextVersion(config, {
+      debug: options.debug,
+      tagPrefix: `${project}/${mainTagPrefix}`,
+      bump: options.bump,
+    });
+    if (result?.length) {
+      nextVersionResult.push({ project, tag: result[0].tag, version: result[0].version });
+    }
+    const nextProjectIndex = projects.indexOf(project) + 1;
+    if (nextProjectIndex < projects.length) {
+      await getNextVersion(projects[nextProjectIndex]);
+    }
+  };
+
+  await getNextVersion(projects[0]);
 
   return nextVersionResult.filter((r) => !!r);
 }
