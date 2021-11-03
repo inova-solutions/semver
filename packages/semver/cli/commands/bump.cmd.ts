@@ -16,7 +16,7 @@ async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
   const channel = await getChannel(config);
 
-  debug(options.debug, `current branch: ${await getCurrentBranch()}`);
+  debug(options.debug, `current branch is ${await getCurrentBranch()}`);
   debug(options.debug && (await isDetachedHead()), `HEAD is detached: true`);
   debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 

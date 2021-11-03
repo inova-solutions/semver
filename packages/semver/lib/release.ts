@@ -33,6 +33,7 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
     packageJson.version = mainVersion.version;
     await updatePackageJson(packageJson, 'package.json');
     hasChanges = true;
+    debug(options.debug, 'package.json was updated');
   }
 
   // bump version in nx projects if package.json exists
