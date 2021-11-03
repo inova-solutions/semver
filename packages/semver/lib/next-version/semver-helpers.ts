@@ -44,7 +44,7 @@ function incrementPrerelease(currentVersion: SemVer, lastRelease: SemVer, bump: 
 
   // bump from beta
   if (lastVersionIsPrerelease) {
-    return currentVersion[bump] === lastRelease[bump] && lastRelease.major >= currentVersion.major
+    return currentVersion[bump] === lastRelease[bump] && lastRelease.major >= currentVersion.major && bump !== 'patch'
       ? `${incSemver(currentVersion, bump)}-${channel}.1`
       : incSemver(lastTag, 'prerelease');
   }

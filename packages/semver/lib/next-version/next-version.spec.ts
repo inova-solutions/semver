@@ -166,6 +166,26 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     expect(version[0].tag).toEqual('1.1.0-beta.1');
   });
 
+  it('another patch should be 1.1.0-beta.2, after rc build 1.0.0-rc.1', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(false);
+    await gitCommits(['feat: first feat'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCheckout('releases/1.0', 'create', { cwd });
+    await gitTagVersion('1.0.0-rc.1', undefined, { cwd });
+    await gitCheckout('main', 'checkout', { cwd });
+    await commitAndTag('feat: the new feature','1.1.0-beta.1', cwd);
+    await gitCommits(['fix: the another patch'], { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version[0].tag).toEqual('1.1.0-beta.2');
+  });
+
   it('another new feat should be 1.1.0-beta.2, after rc build 1.0.0-rc.1', async () => {
     // arrange
     const config = await getConfig();
