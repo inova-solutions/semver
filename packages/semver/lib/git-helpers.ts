@@ -146,8 +146,7 @@ export async function push(): Promise<void> {
     const branch = await getCurrentBranch();
     execSync(`git push origin HEAD:${branch}`);
   } else {
-    const repoUrl = execSync(`git config --get remote.origin.url`).toString().trim();
-    execSync(`git push --tags ${repoUrl}`);
+    execSync(`git push`);
   }
 }
 
