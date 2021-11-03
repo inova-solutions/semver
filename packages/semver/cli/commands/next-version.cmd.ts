@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { nextVersion, getConfig, NextVersionOptions } from '../../lib';
-import { info } from '../../lib/logger';
+import { nextVersion, getConfig, NextVersionOptions, getCurrentBranch, getChannel, isDetachedHead } from '../../lib';
+import { debug, info } from '../../lib/logger';
 
 /**
  * Adds a subcommand to the program for emitting the next version.
@@ -31,6 +31,11 @@ export function addOptions(cmd: Command): Command {
 
 async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
+  const channel = await getChannel(config);
+
+  debug(options.debug, `current branch: ${await getCurrentBranch()}`);
+  debug(options.debug && (await isDetachedHead()), `HEAD is detached: true`);
+  debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
   const version = await nextVersion(config, options);
   if (version) info(`next version(s): ${chalk.greenBright.bold(version.map((v) => v.tag).join(', '))}`);

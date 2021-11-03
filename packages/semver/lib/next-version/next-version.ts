@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Config, isBetaBranch, isReleaseBranch } from '../config';
 import { conventionalRecommendedBump } from '../conventional-changelog/conventional-commits';
-import { getAllTags, getCurrentBranch, isPr, lastSemverTag as _lastSemverTag } from '../git-helpers';
+import { getAllTags, isPr, lastSemverTag as _lastSemverTag } from '../git-helpers';
 import { increment } from './semver-helpers';
 import { debug, info, warn } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
@@ -24,9 +24,6 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   }
   const channel: Channel = await getChannel(config);
   const tagPrefix = options.tagPrefix;
-
-  debug(options.debug, `current branch: ${await getCurrentBranch()}`);
-  debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
   const lastTag = await lastSemverTag({ channel, tagPrefix });
   const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });

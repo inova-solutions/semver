@@ -1,5 +1,7 @@
+import chalk from 'chalk';
 import { Command } from 'commander';
-import { release, getConfig, nextVersion, NextVersionOptions } from '../../lib';
+import { release, getConfig, nextVersion, NextVersionOptions, getCurrentBranch, isDetachedHead, getChannel } from '../../lib';
+import { debug } from '../../lib/logger';
 import { addOptions as addNextVersionOptions } from './next-version.cmd';
 
 /**
@@ -12,6 +14,11 @@ export function addBumpCmd(program: Command) {
 
 async function handleCommand(options: NextVersionOptions) {
   const config = await getConfig();
+  const channel = await getChannel(config);
+
+  debug(options.debug, `current branch: ${await getCurrentBranch()}`);
+  debug(options.debug && (await isDetachedHead()), `HEAD is detached: true`);
+  debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
   const versions = await nextVersion(config, options);
   await release(options, versions);
