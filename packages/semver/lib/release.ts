@@ -3,7 +3,7 @@ import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
-import { NextVersionOptions, NextVersionResult } from './models';
+import { BumpOptions, NextVersionResult } from './models';
 
 /**
  * Create a new release.
@@ -11,7 +11,7 @@ import { NextVersionOptions, NextVersionResult } from './models';
  * @param options Options.
  * @param nextVersions Tags for the release.
  */
-export async function release(options: NextVersionOptions, nextVersions: NextVersionResult[]) {
+export async function release(options: BumpOptions, nextVersions: NextVersionResult[]) {
   if (!nextVersions) return;
 
   // check if branch is up to date
@@ -28,7 +28,7 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
   let hasChanges = false;
   const mainVersion = getMainVersion(nextVersions);
   // bump version in main package.json if exists
-  if (existsSync('package.json')) {
+  if (existsSync('package.json') && !options.skipChoreCommit) {
     const packageJson = await readPackageJson('package.json');
     packageJson.version = mainVersion.version;
     await updatePackageJson(packageJson, 'package.json');
@@ -42,7 +42,7 @@ export async function release(options: NextVersionOptions, nextVersions: NextVer
     hasChanges = true;
   }
 
-  if (hasChanges) {
+  if (hasChanges && !options.skipChoreCommit) {
     commit(
       `chore(release): ${mainVersion.tag}
 [skip ci]

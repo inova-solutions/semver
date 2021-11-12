@@ -7,7 +7,7 @@ import * as logger from './logger';
 import * as gitHelpers from './git-helpers';
 import { readFile } from 'fs';
 import { join } from 'path';
-import { NextVersionOptions } from './models';
+import { BumpOptions } from './models';
 
 describe('release', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -114,9 +114,30 @@ describe('release', () => {
     const gitTagsAfterRelease = await getGitTags(cwd);
     expect(gitTagsAfterRelease).toContain('1.0.0-beta.2');
   });
+
+  it('skipChoreCommit works', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommitFile('package.json', 'fix: deps', { cwd }, '{"version": "1.0.0-beta.1"}');
+    await push({ cwd });
+    const head = await getLastCommit({cwd});
+
+    // act
+    await testRelease(cwd, config, { skipChoreCommit: true });
+
+    // assert
+    const headAfterRelease = await getLastCommit({cwd});
+    const packageJson = await readPackageJson(join(cwd, 'package.json'));
+    expect(packageJson.version).toEqual('1.0.0-beta.1');
+    expect(head).toEqual(headAfterRelease);
+  });
 });
 
-async function testRelease(cwd: string, config: Config, options: NextVersionOptions) {
+async function testRelease(cwd: string, config: Config, options: BumpOptions) {
   const currentCwd = process.cwd();
   try {
     process.chdir(cwd);

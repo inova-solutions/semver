@@ -23,3 +23,7 @@ export interface NextVersionResult {
   version: string;
   tag: string;
 }
+
+export interface BumpOptions extends NextVersionOptions {
+  skipChoreCommit?: boolean;
+}

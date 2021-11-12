@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { release, getConfig, nextVersion, NextVersionOptions, getCurrentBranch, isDetachedHead, getChannel } from '../../lib';
+import { release, getConfig, nextVersion, BumpOptions, getCurrentBranch, isDetachedHead, getChannel } from '../../lib';
 import { debug } from '../../lib/logger';
 import { addOptions as addNextVersionOptions } from './next-version.cmd';
 
@@ -9,10 +9,18 @@ import { addOptions as addNextVersionOptions } from './next-version.cmd';
  * @param program CLI program
  */
 export function addBumpCmd(program: Command) {
-  addNextVersionOptions(program.command('bump').description('Creates the pending release. Adds the next version tags to git')).action(handleCommand);
+  const bumpCmd = program
+    .command('bump')
+    .description('Creates the pending release. Adds the next version tags to git')
+    .option(
+      '--skipChoreCommit',
+      'Skip the chore commit with version update. Only the git tags will be created.'
+    );
+
+  addNextVersionOptions(bumpCmd).action(handleCommand);
 }
 
-async function handleCommand(options: NextVersionOptions) {
+async function handleCommand(options: BumpOptions) {
   const config = await getConfig();
   const channel = await getChannel(config);
 
