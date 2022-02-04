@@ -53,7 +53,7 @@ export async function gitRepo(withRemote: boolean, branch = 'main') {
 /**
  *  Create a tag on a commit in the current git repository.
  * @param tagName The tag name to create.
- * @param sha he commit on which to create the tag. If undefined the tag is created on the last commit.
+ * @param sha The commit on which to create the tag. If undefined the tag is created on the last commit.
  * @param execaOptions Options to pass to `execa`.
  */
 export async function gitTagVersion(tagName: string, sha: string, execaOptions: execa.Options<string>) {

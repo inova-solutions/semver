@@ -488,6 +488,30 @@ describe('nextVersion in release, rc mode is enabled', () => {
     // assert
     expect(version[0].tag).toEqual('1.0.0-rc.3');
   });
+
+  it('increment correctly for a new release branch but for same version', async () => {
+    // arrange
+    const config = await getConfig();
+
+    // -- init main
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat: first feat', '1.0.0-beta.1', cwd);
+    await commitAndTag('feat: next feat', '1.0.0-beta.2', cwd);
+    // -- create release branch (in rc mode)
+    await gitCheckout('releases/1.0', 'create', { cwd });
+    await gitTagVersion('1.0.0-rc.1', undefined, { cwd });
+    // -- add new features to main
+    await gitCheckout('main', 'checkout', { cwd });
+    await commitAndTag('feat(lib-a): a new feature for the next rc build', '1.1.0-beta.1', cwd);
+    // -- create a new release branch but for same version 1.0 (the original 1.0 will be archived)
+    await gitCheckout('releases/1.0b', 'create', { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version[0].tag).toEqual('1.0.0-rc.2');
+  });
 });
 
 describe('nextVersion in release, stable mode is enabled', () => {
