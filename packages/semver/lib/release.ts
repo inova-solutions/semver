@@ -3,7 +3,7 @@ import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
-import { BumpOptions, NextVersionResult } from './models';
+import { BumpOptions, VersionResult } from './models';
 
 /**
  * Create a new release.
@@ -11,7 +11,7 @@ import { BumpOptions, NextVersionResult } from './models';
  * @param options Options.
  * @param nextVersions Tags for the release.
  */
-export async function release(options: BumpOptions, nextVersions: NextVersionResult[]) {
+export async function release(options: BumpOptions, nextVersions: VersionResult[]) {
   if (!nextVersions) return;
 
   // check if branch is up to date
@@ -55,11 +55,11 @@ export async function release(options: BumpOptions, nextVersions: NextVersionRes
   nextVersions.forEach((nextVersion) => addGitTag(nextVersion.tag));
 }
 
-function getMainVersion(nextVersions: NextVersionResult[]) {
+function getMainVersion(nextVersions: VersionResult[]) {
   return nextVersions.filter((result) => !result.project).filter((tag) => validSemver(tag.version))[0];
 }
 
-async function bumpNxProjects(nextVersions: NextVersionResult[]) {
+async function bumpNxProjects(nextVersions: VersionResult[]) {
   const allProjects = await nxAffectedProjects(undefined);
 
   await Promise.all(

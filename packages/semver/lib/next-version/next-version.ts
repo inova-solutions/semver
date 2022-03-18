@@ -1,13 +1,14 @@
 import chalk from 'chalk';
 import { Config, isBetaBranch, isReleaseBranch } from '../config';
 import { conventionalRecommendedBump } from '../conventional-changelog/conventional-commits';
-import { getAllTags, isPr, lastSemverTag as _lastSemverTag } from '../git-helpers';
+import { getAllTags, isPr, lastSemverTag } from '../git-helpers';
 import { increment } from './semver-helpers';
 import { debug, info, warn } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
 import { ERRORS } from '../constants';
-import { NextVersionOptions, NextVersionResult, Channel } from '../models';
-import { writeFile as _writeFile } from 'fs';
+import { NextVersionOptions, VersionResult, Channel } from '../models';
+import { writeFile } from '../utils';
+
 
 /**
  * Determine the next version for your repo or your packages in your repo, depending on your workspace type.
@@ -16,7 +17,7 @@ import { writeFile as _writeFile } from 'fs';
  * @param options The options.
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
-export async function nextVersion(config: Config, options: NextVersionOptions): Promise<NextVersionResult[]> {
+export async function nextVersion(config: Config, options: NextVersionOptions): Promise<VersionResult[]> {
   // check if is a PR
   if (isPr()) {
     warn(`This run was triggered by a pull request and therefore a new version won't be published.`);
@@ -47,7 +48,7 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
 
   if (recommendedBump?.reason) info(`${chalk.greenBright.bold(recommendedBump.reason)}`);
 
-  let packageTags: NextVersionResult[] = [];
+  let packageTags: VersionResult[] = [];
   if (options.workspace === 'nx') {
     packageTags = await nextVersionNx(config, { bump, tagPrefix, debug: options.debug, path: options.path }, lastTag);
   }
@@ -75,13 +76,6 @@ export async function getChannel(config: Config): Promise<Channel> {
   throw new Error(ERRORS.UNKNOWN_BRANCH);
 }
 
-async function lastSemverTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
-  if (options.channel === 'beta' || options.channel === 'rc') {
-    return await _lastSemverTag(options);
-  }
-  return await _lastSemverTag({ tagPrefix: options.tagPrefix });
-}
-
 async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: string }): Promise<string> {
   if (options.channel === 'beta') {
     return (await getAllTags({ tagPrefix: options.tagPrefix })).filter((v) => !v.includes(options.channel))[0];
@@ -93,10 +87,10 @@ async function nextVersionNx(
   config: Config,
   options: NextVersionOptions,
   lastTag: string
-): Promise<NextVersionResult[]> {
+): Promise<VersionResult[]> {
   const mainTagPrefix = options.tagPrefix ? options.tagPrefix : '';
   const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
-  const nextVersionResult: NextVersionResult[] = [];
+  const nextVersionResult: VersionResult[] = [];
 
   const getNextVersion = async (project: string) => {
     info(`run for ${chalk.bold(project)}`);
@@ -119,14 +113,4 @@ async function nextVersionNx(
   return nextVersionResult.filter((r) => !!r);
 }
 
-async function writeFile(data: string, path: string) {
-  return new Promise<void>((resolve, reject) => {
-    _writeFile(path, data, (error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve();
-    });
-  });
-}
+

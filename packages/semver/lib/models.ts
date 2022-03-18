@@ -9,16 +9,19 @@ export type ReleaseType = Callback.Recommendation.ReleaseType;
  */
 export type Channel = 'stable' | 'rc' | 'beta';
 
-export interface NextVersionOptions {
-  tagPrefix?: string;
-  path?: string;
+export interface LastVersionOptions {
   debug?: boolean;
   workspace?: 'nx';
-  bump?: ReleaseType;
   outputFile?: string;
 }
 
-export interface NextVersionResult {
+export interface NextVersionOptions extends LastVersionOptions {
+  tagPrefix?: string;
+  path?: string;
+  bump?: ReleaseType;
+}
+
+export interface VersionResult {
   project?: string;
   version: string;
   tag: string;

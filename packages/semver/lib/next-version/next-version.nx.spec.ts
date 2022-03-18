@@ -2,7 +2,7 @@ import { gitTagVersion, gitCommitFile } from '../test/git-utils';
 import { nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { createWorkspace, generateLibrary } from '../test/nx-utils';
-import { NextVersionOptions, NextVersionResult } from '../models';
+import { NextVersionOptions, VersionResult } from '../models';
 import { readFile as _readFile } from 'fs';
 import { join } from 'path';
 
@@ -30,7 +30,7 @@ describe('nextVersion in main, for nx workspace', () => {
     });
 
     // assert
-    expect(versions.sort((a, b) => sortByProject(a, b))).toEqual<NextVersionResult[]>([
+    expect(versions.sort((a, b) => sortByProject(a, b))).toEqual<VersionResult[]>([
       { version: '1.0.0-beta.1', tag: '1.0.0-beta.1' },
       { version: '1.0.0-beta.1', tag: 'lib-a/1.0.0-beta.1', project: 'lib-a' },
       { version: '1.0.0-beta.1', tag: 'lib-b/1.0.0-beta.1', project: 'lib-b' },
@@ -49,7 +49,7 @@ describe('nextVersion in main, for nx workspace', () => {
     });
 
     // assert
-    const fileContent = await readFile<NextVersionResult[]>(join(cwd, 'out.json'));
+    const fileContent = await readFile<VersionResult[]>(join(cwd, 'out.json'));
     expect(versions).toEqual(fileContent);
   });
 
@@ -72,8 +72,8 @@ describe('nextVersion in main, for nx workspace', () => {
 
     // assert
     const sortedResult = versions.sort((a, b) => sortByProject(a, b));
-    expect(sortedResult[0]).toEqual<NextVersionResult>({ tag: '1.0.0-beta.2', version: '1.0.0-beta.2' });
-    expect(sortedResult[1]).toEqual<NextVersionResult>({
+    expect(sortedResult[0]).toEqual<VersionResult>({ tag: '1.0.0-beta.2', version: '1.0.0-beta.2' });
+    expect(sortedResult[1]).toEqual<VersionResult>({
       tag: 'lib-b/1.0.0-beta.2',
       version: '1.0.0-beta.2',
       project: 'lib-b',
@@ -100,8 +100,8 @@ describe('nextVersion in main, for nx workspace', () => {
 
     // assert
     const sortedResult = versions.sort((a, b) => sortByProject(a, b));
-    expect(sortedResult[0]).toEqual<NextVersionResult>({ tag: 'v1.0.0-beta.2', version: '1.0.0-beta.2' });
-    expect(sortedResult[1]).toEqual<NextVersionResult>({
+    expect(sortedResult[0]).toEqual<VersionResult>({ tag: 'v1.0.0-beta.2', version: '1.0.0-beta.2' });
+    expect(sortedResult[1]).toEqual<VersionResult>({
       tag: 'lib-c/v1.0.0-beta.2',
       version: '1.0.0-beta.2',
       project: 'lib-c',
@@ -138,7 +138,7 @@ async function readFile<T>(path: string) {
   });
 }
 
-function sortByProject(a: NextVersionResult, b: NextVersionResult) {
+function sortByProject(a: VersionResult, b: VersionResult) {
   const projectA = (a.project ?? '').toUpperCase();
   const projectB = (b.project ?? '').toUpperCase();
 
