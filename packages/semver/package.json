@@ -19,7 +19,7 @@
     "semver": "./cli/semver.js"
   },
   "dependencies": {
-    "@nrwl/devkit": "^12.10.0",
+    "@nrwl/devkit": "^13.9.2",
     "chalk": "^2.4.2",
     "commander": "^8.2.0",
     "conventional-changelog-angular": "^5.0.13",

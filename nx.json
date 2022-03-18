@@ -14,9 +14,12 @@
           "test",
           "e2e"
         ],
-        "accessToken": "YjkyOGI0YWUtMjA5Mi00NDg0LThhYTYtNzVkZDc0NzE2M2NjfHJlYWQtd3JpdGU="
+        "accessToken": "YjkyOGI0YWUtMjA5Mi00NDg0LThhYTYtNzVkZDc0NzE2M2NjfHJlYWQtd3JpdGU=",
+        "parallel": 1
       }
     }
   },
-  "projects": {}
+  "cli": {
+    "defaultCollection": "@nrwl/workspace"
+  }
 }

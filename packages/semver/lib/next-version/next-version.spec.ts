@@ -263,6 +263,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
 });
 
 describe('nextVersion in main, the first release branch is in stable mode', () => {
+  jest.setTimeout(90000);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
   afterEach(() => {
@@ -396,6 +397,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
 });
 
 describe('nextVersion in release, rc mode is enabled', () => {
+  jest.setTimeout(90000);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
   afterEach(() => {

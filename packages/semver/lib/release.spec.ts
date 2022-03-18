@@ -10,6 +10,7 @@ import { join } from 'path';
 import { BumpOptions } from './models';
 
 describe('release', () => {
+  jest.setTimeout(90000);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
   afterEach(() => {
