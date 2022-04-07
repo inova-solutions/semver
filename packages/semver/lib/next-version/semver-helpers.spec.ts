@@ -70,7 +70,7 @@ describe('semver-helpers, increment release builds in release channel', () => {
     expect(increment(null, null, 'patch', 'stable')).toEqual('1.0.0');
   });
   it('patch switch from rc', () => {
-    expect(increment('1.0.1-rc.1', '1.0.0', 'patch', 'stable')).toEqual('1.0.1');
+    expect(increment('1.0.1-rc.1', '1.0.0', 'patch', 'stable', true)).toEqual('1.0.1');
   });
   it('hotfix', () => {
     expect(increment('1.0.0', '1.0.0', 'patch', 'stable')).toEqual('1.0.1');

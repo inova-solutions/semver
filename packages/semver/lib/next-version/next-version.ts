@@ -9,7 +9,6 @@ import { ERRORS } from '../constants';
 import { NextVersionOptions, VersionResult, Channel } from '../models';
 import { writeFile } from '../utils';
 
-
 /**
  * Determine the next version for your repo or your packages in your repo, depending on your workspace type.
  * The workspace type can be defined via the `workspace` option.
@@ -26,8 +25,13 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
   const channel: Channel = await getChannel(config);
   const tagPrefix = options.tagPrefix;
 
-  const lastTag = await lastSemverTag({ channel, tagPrefix });
-  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix });
+  const lastTag = await lastSemverTag({ channel, tagPrefix }); // last git tag
+  const lastReleaseTag = await lastSemverReleaseTag({ channel, tagPrefix }); // last release (for beta it can also be a RC release tag)
+
+  const isSwitchingToStable = !config.releaseCandidate && lastTag?.includes('rc');
+  if (isSwitchingToStable && !options.bump) {
+    options.bump = 'minor';
+  }
 
   let recommendedBump = { releaseType: options.bump, reason: undefined };
   if (!recommendedBump.releaseType) {
@@ -53,7 +57,7 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
     packageTags = await nextVersionNx(config, { bump, tagPrefix, debug: options.debug, path: options.path }, lastTag);
   }
 
-  const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel);
+  const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel, isSwitchingToStable);
   packageTags.push({
     tag: tagPrefix ? `${tagPrefix}${incrementedVersion}` : incrementedVersion,
     version: incrementedVersion,
@@ -83,11 +87,7 @@ async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: str
   return (await getAllTags({ channel: 'stable', tagPrefix: options.tagPrefix }))[0];
 }
 
-async function nextVersionNx(
-  config: Config,
-  options: NextVersionOptions,
-  lastTag: string
-): Promise<VersionResult[]> {
+async function nextVersionNx(config: Config, options: NextVersionOptions, lastTag: string): Promise<VersionResult[]> {
   const mainTagPrefix = options.tagPrefix ? options.tagPrefix : '';
   const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
   const nextVersionResult: VersionResult[] = [];
@@ -112,5 +112,3 @@ async function nextVersionNx(
 
   return nextVersionResult.filter((r) => !!r);
 }
-
-

@@ -57,7 +57,6 @@ describe('nextVersion in main, no release branch exists', () => {
     await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
     await gitCommits(['build: should not bump'], { cwd });
 
-
     // act
     const version = await testNextVersion(cwd, config, {});
 
@@ -176,7 +175,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     await gitCheckout('releases/1.0', 'create', { cwd });
     await gitTagVersion('1.0.0-rc.1', undefined, { cwd });
     await gitCheckout('main', 'checkout', { cwd });
-    await commitAndTag('feat: the new feature','1.1.0-beta.1', cwd);
+    await commitAndTag('feat: the new feature', '1.1.0-beta.1', cwd);
     await gitCommits(['fix: the another patch'], { cwd });
 
     // act
@@ -584,6 +583,41 @@ describe('nextVersion in release, stable mode is enabled', () => {
 
     // act & assert
     await expect(testNextVersion(cwd, config, {})).rejects.toThrow();
+  });
+
+  it('second release work as expected', async () => {
+    // arrange
+    const config = await getConfig();
+    config.releaseCandidate = false;
+
+    // -- init main
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat: first feat', '1.0.0-beta.1', cwd);
+    await commitAndTag('feat: next feat', '1.0.0-beta.2', cwd);
+    // -- create release branch 1
+    await gitCheckout('releases/1.0', 'create', { cwd });
+    await gitTagVersion('1.0.0-rc.1', undefined, { cwd });
+    await commitAndTag('build: mark as stable', '1.0.0', cwd);
+    // -- add new feat to main and tag it with nextVersion
+    await gitCheckout('main', 'checkout', { cwd });
+    await gitCommits(['feat: new feat in main'], { cwd });
+    let nextVersion = (await testNextVersion(cwd, config, {}))[0];
+    expect(nextVersion.tag).toEqual('1.1.0-beta.1');
+    await gitTagVersion(nextVersion.tag, undefined, { cwd });
+    // -- release that new feat. in a new release branch, but create a rc first
+    config.releaseCandidate = true;
+    await gitCheckout('releases/1.1', 'create', { cwd });
+    nextVersion = (await testNextVersion(cwd, config, {}))[0];
+    expect(nextVersion.tag).toEqual('1.1.0-rc.1');
+    await gitTagVersion(nextVersion.tag, undefined, { cwd });
+    config.releaseCandidate = false;
+    await gitCommits(['build: mark as stable'], { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version[0].tag).toEqual('1.1.0');
   });
 });
 

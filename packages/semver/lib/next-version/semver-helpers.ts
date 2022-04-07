@@ -7,11 +7,20 @@ import { Channel, ReleaseType } from '../models';
  * @param lastRelease The last release tag (for beta channel it can be also a rc tag).
  * @param bump Type of increment, major, minor or patch.
  * @param channel Release channel, beta, rc or release.
+ * @param isSwitchingToStable Indicates if its the first stable release in a release branch
  * @returns The new version.
  */
-export function increment(version: string, lastRelease: string, bump: ReleaseType, channel: Channel): string {
+export function increment(
+  version: string,
+  lastRelease: string,
+  bump: ReleaseType,
+  channel: Channel,
+  isSwitchingToStable = false
+): string {
   if (!version && !lastRelease) {
     return channel === 'stable' ? '1.0.0' : `1.0.0-${channel}.1`;
+  } else if (!version) {
+    version = lastRelease;
   }
   lastRelease = !lastRelease ? '0.0.0' : lastRelease;
 
@@ -24,6 +33,10 @@ export function increment(version: string, lastRelease: string, bump: ReleaseTyp
 
   const currentVersion = new SemVer(version, { includePrerelease: true });
   const lastReleaseVersion = new SemVer(lastRelease, { includePrerelease: true });
+
+  if (isSwitchingToStable && channel === 'stable') {
+    return `${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch}`;
+  }
 
   if (channel === 'beta' || channel === 'rc') {
     return incrementPrerelease(currentVersion, lastReleaseVersion, bump, channel);

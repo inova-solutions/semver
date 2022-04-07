@@ -86,9 +86,15 @@ export async function getBranchRelatedTags(options: SemverTagOptions): Promise<s
         return;
       }
       const filteredByPrefix = tags
+        .filter((tag) => (options.channel === 'stable' && !tag.includes('beta')) || options.channel !== 'stable') // for stable channel beta tags are not relevant
         .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
         .map((tag) => (options.tagPrefix ? tag.replace(options.tagPrefix, '') : tag));
-      resolve(filterByChannel(filteredByPrefix, options.channel));
+
+      if (options.channel === 'stable') {
+        resolve(filteredByPrefix);
+      } else {
+        resolve(filterByChannel(filteredByPrefix, options.channel));
+      }
     });
   });
 }
