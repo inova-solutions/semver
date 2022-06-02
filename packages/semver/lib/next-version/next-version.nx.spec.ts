@@ -1,10 +1,11 @@
 import { gitTagVersion, gitCommitFile } from '../test/git-utils';
-import { nextVersion } from './next-version';
+import { getChannel, nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { createWorkspace, generateLibrary } from '../test/nx-utils';
 import { NextVersionOptions, VersionResult } from '../models';
 import { readFile as _readFile } from 'fs';
 import { join } from 'path';
+import { getCurrentBranch } from '../git-helpers';
 
 let workspacePath;
 
@@ -113,7 +114,9 @@ async function testNextVersion(cwd: string, config: Config, options: NextVersion
   const currentCwd = process.cwd();
   try {
     process.chdir(cwd);
-    return await nextVersion(config, options);
+    const channel = await getChannel(config);
+    const currentBranch = await getCurrentBranch();
+    return (await nextVersion({config, channel, currentBranch, versions: null}, options))?.versions ?? null;
   } finally {
     process.chdir(currentCwd);
   }

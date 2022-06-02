@@ -1,6 +1,6 @@
 import * as findVersions from 'find-versions';
 import * as _gitSemverTags from 'git-semver-tags';
-import { exec, execSync } from 'child_process';
+import { exec, execSync, StdioOptions } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { isBetaBranch, isReleaseBranch } from './config';
 import { ERRORS } from './constants';
@@ -122,10 +122,11 @@ export async function getAllTags(options: SemverTagOptions): Promise<string[]> {
  * Add a new git tag and push it to the origin.
  * @param gitTag Tag.
  * @param commit Commit to tag (default is HEAD).
+ * @param stdio Option  to configure the pipes that are established between the parent and child process.
  */
-export function addGitTag(gitTag: string, commit = 'HEAD'): void {
-  execSync(`git tag ${gitTag} ${commit}`);
-  execSync(`git push origin ${gitTag}`);
+export function addGitTag(gitTag: string, commit = 'HEAD', stdio: StdioOptions = undefined): void {
+  execSync(`git tag ${gitTag} ${commit}`, { stdio });
+  execSync(`git push origin ${gitTag}`, { stdio });
 }
 
 /**
@@ -138,21 +139,23 @@ export function getOrigin() {
 /**
  * Commit git changes.
  * @param message Commit message.
+ * @param stdio Option  to configure the pipes that are established between the parent and child process.
  */
-export function commit(message: string): void {
-  execSync(`git add .`);
-  execSync(`git commit -m "${message}"`);
+export function commit(message: string, stdio: StdioOptions = undefined): void {
+  execSync(`git add .`, { stdio });
+  execSync(`git commit -m "${message}"`, { stdio });
 }
 
 /**
  * Push git changes.
+ * @param stdio Option  to configure the pipes that are established between the parent and child process.
  */
-export async function push(): Promise<void> {
+export async function push(stdio: StdioOptions = undefined): Promise<void> {
   if (await isDetachedHead()) {
     const branch = await getCurrentBranch();
-    execSync(`git push origin HEAD:${branch}`);
+    execSync(`git push origin HEAD:${branch}`, { stdio });
   } else {
-    execSync(`git push`);
+    execSync(`git push`, { stdio });
   }
 }
 

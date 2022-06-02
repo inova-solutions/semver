@@ -1,10 +1,11 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCheckout, gitCommitFile, push } from '../test/git-utils';
-import { nextVersion } from './next-version';
+import { getChannel, nextVersion } from './next-version';
 import { Config, getConfig } from '../config';
 import { ERRORS } from '../constants';
 import { NextVersionOptions } from '../models';
 import * as gitHelpers from '../git-helpers';
 import * as logger from '../logger';
+import { getCurrentBranch } from '../git-helpers';
 
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -778,7 +779,10 @@ async function testNextVersion(cwd: string, config: Config, options: NextVersion
   const currentCwd = process.cwd();
   try {
     process.chdir(cwd);
-    return await nextVersion(config, options);
+    const channel = await getChannel(config);
+    const currentBranch = await getCurrentBranch();
+    const result = await nextVersion({ config, channel, currentBranch, versions: null }, options);
+    return result?.versions ?? null;
   } finally {
     process.chdir(currentCwd);
   }

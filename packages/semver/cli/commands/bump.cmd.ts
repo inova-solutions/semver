@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { release, getConfig, nextVersion, BumpOptions, getCurrentBranch, isDetachedHead, getChannel } from '../../lib';
+import { release, getConfig, nextVersion, BumpOptions, getCurrentBranch, isDetachedHead, getChannel, BaseContext } from '../../lib';
 import { debug } from '../../lib/logger';
 import { addOptions as addNextVersionOptions } from './next-version.cmd';
 
@@ -21,13 +21,25 @@ export function addBumpCmd(program: Command) {
 }
 
 async function handleCommand(options: BumpOptions) {
+  const isOutputJson = options.output === 'json';
   const config = await getConfig();
   const channel = await getChannel(config);
+  const currentBranch = await getCurrentBranch();
 
-  debug(options.debug, `current branch is ${await getCurrentBranch()}`);
+  let ctx: BaseContext = {
+    config,
+    channel,
+    currentBranch,
+  };
+  debug(options.debug, `current branch is ${currentBranch}`);
   debug(options.debug && (await isDetachedHead()), `HEAD is detached: true`);
   debug(options.debug, `release channel is ${chalk.blueBright.bold(channel)}`);
 
-  const versions = await nextVersion(config, options);
-  await release(options, versions);
+
+  ctx = await nextVersion(ctx, options);
+  const bumpCtx = await release(ctx, options);
+
+  if(bumpCtx && isOutputJson){
+    console.log(bumpCtx);
+  }
 }

@@ -1,13 +1,13 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCommitFile, push, gitCheckout, getLastCommit } from './test/git-utils';
 import { release } from './release';
 import { Config, getConfig } from './config';
-import { nextVersion } from './next-version/next-version';
-import { getBranchRelatedTags } from './git-helpers';
+import { getChannel, nextVersion } from './next-version/next-version';
+import { getBranchRelatedTags, getCurrentBranch } from './git-helpers';
 import * as logger from './logger';
 import * as gitHelpers from './git-helpers';
 import { readFile } from 'fs';
 import { join } from 'path';
-import { BumpOptions } from './models';
+import { BaseContext, BumpOptions } from './models';
 
 describe('release', () => {
   jest.setTimeout(90000);
@@ -47,7 +47,7 @@ describe('release', () => {
     await push({ cwd });
 
     // act
-    await testRelease(cwd, config, {});
+    await testRelease(cwd, config, { });
 
     // assert
     const gitTagsAfterRelease = await getGitTags(cwd);
@@ -125,13 +125,13 @@ describe('release', () => {
     await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
     await gitCommitFile('package.json', 'fix: deps', { cwd }, '{"version": "1.0.0-beta.1"}');
     await push({ cwd });
-    const head = await getLastCommit({cwd});
+    const head = await getLastCommit({ cwd });
 
     // act
     await testRelease(cwd, config, { skipChoreCommit: true });
 
     // assert
-    const headAfterRelease = await getLastCommit({cwd});
+    const headAfterRelease = await getLastCommit({ cwd });
     const packageJson = await readPackageJson(join(cwd, 'package.json'));
     expect(packageJson.version).toEqual('1.0.0-beta.1');
     expect(head).toEqual(headAfterRelease);
@@ -142,7 +142,17 @@ async function testRelease(cwd: string, config: Config, options: BumpOptions) {
   const currentCwd = process.cwd();
   try {
     process.chdir(cwd);
-    await release(options, await nextVersion(config, options));
+    const channel = await getChannel(config);
+    const currentBranch = await getCurrentBranch();
+    let ctx: BaseContext = {
+      config,
+      channel,
+      currentBranch,
+    };
+
+    ctx = await nextVersion(ctx, options);
+
+    await release(ctx, options);
   } finally {
     process.chdir(currentCwd);
   }

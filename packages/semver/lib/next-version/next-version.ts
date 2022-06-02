@@ -6,7 +6,7 @@ import { increment } from './semver-helpers';
 import { debug, info, warn } from '../logger';
 import { nxAffectedProjects } from './nx-helpers';
 import { ERRORS } from '../constants';
-import { NextVersionOptions, VersionResult, Channel } from '../models';
+import { NextVersionOptions, VersionResult, Channel, BaseContext } from '../models';
 import { writeFile } from '../utils';
 
 /**
@@ -16,13 +16,22 @@ import { writeFile } from '../utils';
  * @param options The options.
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
-export async function nextVersion(config: Config, options: NextVersionOptions): Promise<VersionResult[]> {
+export async function nextVersion(context: BaseContext, options: NextVersionOptions): Promise<BaseContext> {
+  const isOutputJson = options.output === 'json';
+  const channel = context.channel;
+  const config = context.config;
+
   // check if is a PR
   if (isPr()) {
-    warn(`This run was triggered by a pull request and therefore a new version won't be published.`);
+    context.warning = `This run was triggered by a pull request and therefore a new version won't be published.`;
+    if (options.output === 'json') {
+      console.log(context);
+    } else {
+      warn(context.warning);
+    }
     return null;
   }
-  const channel: Channel = await getChannel(config);
+
   const tagPrefix = options.tagPrefix;
 
   const lastTag = await lastSemverTag({ channel, tagPrefix }); // last git tag
@@ -41,20 +50,20 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
       debug: options.debug,
       commitTypesToIgnore: config.commitTypesToIgnore,
       tagPrefix,
-      channel,
-    });
+      output: options.output
+    }, context);
   }
-  if (recommendedBump === undefined && lastTag) return null;
+  if (recommendedBump === undefined && lastTag) return context;
   const bump = recommendedBump?.releaseType ?? 'patch';
 
   debug(options.debug, `current version is ${chalk.blueBright.bold(lastTag)}`);
   debug(options.debug, `last release was ${chalk.blueBright.bold(lastReleaseTag)}`);
 
-  if (recommendedBump?.reason) info(`${chalk.greenBright.bold(recommendedBump.reason)}`);
+  if (recommendedBump?.reason) info(!isOutputJson, `${chalk.greenBright.bold(recommendedBump.reason)}`);
 
   let packageTags: VersionResult[] = [];
   if (options.workspace === 'nx') {
-    packageTags = await nextVersionNx(config, { bump, tagPrefix, debug: options.debug, path: options.path }, lastTag);
+    packageTags = await nextVersionNx(context, { bump, tagPrefix, debug: options.debug, path: options.path }, lastTag);
   }
 
   const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel, isSwitchingToStable);
@@ -62,11 +71,13 @@ export async function nextVersion(config: Config, options: NextVersionOptions): 
     tag: tagPrefix ? `${tagPrefix}${incrementedVersion}` : incrementedVersion,
     version: incrementedVersion,
   });
+  context.versions = [...packageTags];
 
   if (options.outputFile) {
     await writeFile(JSON.stringify(packageTags, undefined, 2), options.outputFile);
   }
-  return packageTags;
+
+  return context;
 }
 
 /**
@@ -87,20 +98,25 @@ async function lastSemverReleaseTag(options: { channel: Channel; tagPrefix?: str
   return (await getAllTags({ channel: 'stable', tagPrefix: options.tagPrefix }))[0];
 }
 
-async function nextVersionNx(config: Config, options: NextVersionOptions, lastTag: string): Promise<VersionResult[]> {
+async function nextVersionNx(
+  context: BaseContext,
+  options: NextVersionOptions,
+  lastTag: string
+): Promise<VersionResult[]> {
+  const isOutputJson = options.output === 'json';
   const mainTagPrefix = options.tagPrefix ? options.tagPrefix : '';
   const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
   const nextVersionResult: VersionResult[] = [];
 
   const getNextVersion = async (project: string) => {
-    info(`run for ${chalk.bold(project)}`);
-    const result = await nextVersion(config, {
+    info(!isOutputJson, `run for ${chalk.bold(project)}`);
+    const versions = (await nextVersion(context, {
       debug: options.debug,
       tagPrefix: `${project}/${mainTagPrefix}`,
       bump: options.bump,
-    });
-    if (result?.length) {
-      nextVersionResult.push({ project, tag: result[0].tag, version: result[0].version });
+    }))?.versions;
+    if (versions?.length) {
+      nextVersionResult.push({ project, tag: versions[0].tag, version: versions[0].version });
     }
     const nextProjectIndex = projects.indexOf(project) + 1;
     if (nextProjectIndex < projects.length) {

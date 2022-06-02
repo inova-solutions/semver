@@ -3,7 +3,7 @@ import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
-import { BumpOptions, VersionResult } from './models';
+import { BaseContext, BumpOptions, VersionResult } from './models';
 
 /**
  * Create a new release.
@@ -11,14 +11,20 @@ import { BumpOptions, VersionResult } from './models';
  * @param options Options.
  * @param nextVersions Tags for the release.
  */
-export async function release(options: BumpOptions, nextVersions: VersionResult[]) {
-  if (!nextVersions) return;
+export async function release(ctx: BaseContext, options: BumpOptions): Promise<BaseContext> {
+  const isOutputJson = options.output === 'json';
+  if (!ctx?.versions) return null;
 
   // check if branch is up to date
   if (!(await isBranchUpToDate())) {
-    warn(`The local branch is behind the remote one, therefore a new version won't be published.`);
+    ctx.warning = `The local branch is behind the remote one, therefore a new version won't be published.`;
+    if (options.output === 'json') {
+      console.log(ctx);
+    } else {
+      warn(ctx.warning);
+    }
     await cleanOutput(options.outputFile);
-    return;
+    return null;
   }
 
   debug(options.debug, 'Start with bump...');
@@ -26,7 +32,7 @@ export async function release(options: BumpOptions, nextVersions: VersionResult[
   setGitAuthor();
 
   let hasChanges = false;
-  const mainVersion = getMainVersion(nextVersions);
+  const mainVersion = getMainVersion(ctx.versions);
   // bump version in main package.json if exists
   if (existsSync('package.json') && !options.skipChoreCommit) {
     const packageJson = await readPackageJson('package.json');
@@ -38,7 +44,7 @@ export async function release(options: BumpOptions, nextVersions: VersionResult[
 
   // bump version in nx projects if package.json exists
   if (options.workspace === 'nx') {
-    await bumpNxProjects(nextVersions.filter((nextVersion) => nextVersion.project));
+    await bumpNxProjects(ctx.versions.filter((nextVersion) => nextVersion.project));
     hasChanges = true;
   }
 
@@ -46,13 +52,16 @@ export async function release(options: BumpOptions, nextVersions: VersionResult[
     commit(
       `chore(release): ${mainVersion.tag}
 [skip ci]
-    `
+    `,
+      isOutputJson ? 'ignore' : undefined
     );
-    await push();
+    await push(isOutputJson ? 'ignore' : undefined);
   }
 
   // add git tags
-  nextVersions.forEach((nextVersion) => addGitTag(nextVersion.tag));
+  ctx.versions.forEach((nextVersion) => addGitTag(nextVersion.tag, 'HEAD', isOutputJson ? 'ignore' : undefined));
+
+  return ctx;
 }
 
 function getMainVersion(nextVersions: VersionResult[]) {
