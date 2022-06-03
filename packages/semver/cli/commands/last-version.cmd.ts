@@ -37,7 +37,7 @@ export function addOptions(cmd: Command): Command {
 async function handleCommand(options: LastVersionOptions) {
   const isOutputJson = options.output === 'json';
   const config = await getConfig();
-  const channel = await getChannel(config);
+  const channel = options.channel ?? await getChannel(config);
   const currentBranch = await getCurrentBranch();
 
   let ctx: BaseContext = {
