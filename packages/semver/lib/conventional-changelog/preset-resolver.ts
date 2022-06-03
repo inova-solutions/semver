@@ -1,9 +1,9 @@
 // Copy of: https://github.com/conventional-changelog/conventional-changelog/blob/master/packages/conventional-recommended-bump/preset-resolver.js
 'use strict';
 import { Options } from 'conventional-recommended-bump';
-import * as Q from "q";
+import * as Q from 'q';
 
-export async function presetResolver(presetPackage: unknown) :Promise<PresetResolverResult> {
+export async function presetResolver(presetPackage: unknown): Promise<PresetResolverResult> {
   // start the chain as a Q.Promise
   return Q.resolve().then(() => {
     // handle traditional node-style callbacks
@@ -22,8 +22,8 @@ export async function presetResolver(presetPackage: unknown) :Promise<PresetReso
 
 export interface PresetResolverResult {
   recommendedBumpOpts: {
-    whatBump: Options.WhatBump,
-    parserOpts: unknown,
-  }
-  parserOpts: unknown
+    whatBump: Options.WhatBump;
+    parserOpts: unknown;
+  };
+  parserOpts: unknown;
 }

@@ -6,9 +6,9 @@ export function debug(enabled: boolean, text: string): void {
   if (enabled) console.log(`${prefix} : ${text}`);
 }
 
-export function info(enabled: boolean,text: string): void {
+export function info(enabled: boolean, text: string): void {
   const prefix = chalk.magenta.bold(CLI_NAME);
-  if (enabled)console.log(`${prefix} : ${text}`);
+  if (enabled) console.log(`${prefix} : ${text}`);
 }
 
 export function warn(text: string): void {

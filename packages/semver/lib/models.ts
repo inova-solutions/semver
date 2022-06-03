@@ -19,9 +19,10 @@ export interface LastVersionOptions {
   workspace?: 'nx';
   outputFile?: string;
   output?: OutputFormat;
+  channel?: Channel;
 }
 
-export interface NextVersionOptions extends LastVersionOptions {
+export interface NextVersionOptions extends Omit<LastVersionOptions, 'channel'> {
   tagPrefix?: string;
   path?: string;
   bump?: ReleaseType;

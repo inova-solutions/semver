@@ -9,7 +9,10 @@ import * as envCi from 'env-ci';
 import { Channel } from './models';
 import { warn } from './logger';
 
-export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & { channel?: Channel };
+export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & {
+  channel?: Channel;
+  ignoreBranch?: boolean;
+};
 
 /**
  * Gets name of the current branch.
@@ -45,6 +48,11 @@ export async function getCurrentBranch(): Promise<string> {
  */
 export async function lastSemverTag(options: SemverTagOptions) {
   let tags: string[] = [];
+
+  if (options.ignoreBranch) {
+    return (await getAllTags(options))[0];
+  }
+
   if (await isReleaseBranch()) {
     tags = await getBranchRelatedTags(options);
   } else if (await isBetaBranch()) {

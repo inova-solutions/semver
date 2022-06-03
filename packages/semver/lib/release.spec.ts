@@ -47,7 +47,7 @@ describe('release', () => {
     await push({ cwd });
 
     // act
-    await testRelease(cwd, config, { });
+    await testRelease(cwd, config, {});
 
     // assert
     const gitTagsAfterRelease = await getGitTags(cwd);

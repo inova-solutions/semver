@@ -3,9 +3,10 @@
   "version": "1.1.0-beta.1",
   "license": "MIT",
   "scripts": {
+    "format": "prettier --write .",
     "start": "nodemon --watch 'packages/semver/**/*.ts' --exec npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts last-version --debug --workspace nx",
     "local-build": "nx build semver && @powershell copy .npmrc dist/packages/semver/.npmrc",
-    "last-version": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts last-version --debug --workspace nx --output json",
+    "last-version": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts last-version --debug --workspace nx --output json -c rc",
     "next-version": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts next-version --debug --workspace nx --output json",
     "bump": "npx ts-node --project ./packages/semver/tsconfig.lib.json packages/semver/cli/semver.ts bump --debug --workspace nx",
     "update": "nx migrate latest"

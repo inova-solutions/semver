@@ -13,13 +13,15 @@ import { writeFile } from './utils';
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
 export async function lastVersion(context: BaseContext, options: LastVersionOptions): Promise<BaseContext> {
-  const lastTag = await lastSemverTag({ channel: context.channel });
+  const channel = options.channel ?? context.channel;
+
+  const lastTag = await lastSemverTag({ channel, ignoreBranch: !!options.channel });
 
   debug(options.debug, `current version is ${chalk.blueBright.bold(lastTag)}`);
 
-  const packageTags: VersionResult[] = [{ tag: lastTag, version: lastTag }];
+  const packageTags: VersionResult[] = lastTag ? [{ tag: lastTag, version: lastTag }] : [];
   if (options.workspace === 'nx') {
-    packageTags.push(...(await lastVersionNx(context.channel, options.output)));
+    packageTags.push(...(await lastVersionNx(channel, options.output)));
   }
   context.versions = packageTags;
 

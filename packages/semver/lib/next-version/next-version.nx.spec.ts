@@ -116,7 +116,7 @@ async function testNextVersion(cwd: string, config: Config, options: NextVersion
     process.chdir(cwd);
     const channel = await getChannel(config);
     const currentBranch = await getCurrentBranch();
-    return (await nextVersion({config, channel, currentBranch, versions: null}, options))?.versions ?? null;
+    return (await nextVersion({ config, channel, currentBranch, versions: null }, options))?.versions ?? null;
   } finally {
     process.chdir(currentCwd);
   }

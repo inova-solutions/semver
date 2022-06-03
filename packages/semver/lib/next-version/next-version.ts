@@ -44,14 +44,17 @@ export async function nextVersion(context: BaseContext, options: NextVersionOpti
 
   let recommendedBump = { releaseType: options.bump, reason: undefined };
   if (!recommendedBump.releaseType) {
-    recommendedBump = await conventionalRecommendedBump({
-      preset: config.commitMessageFormat,
-      path: options.path,
-      debug: options.debug,
-      commitTypesToIgnore: config.commitTypesToIgnore,
-      tagPrefix,
-      output: options.output
-    }, context);
+    recommendedBump = await conventionalRecommendedBump(
+      {
+        preset: config.commitMessageFormat,
+        path: options.path,
+        debug: options.debug,
+        commitTypesToIgnore: config.commitTypesToIgnore,
+        tagPrefix,
+        output: options.output,
+      },
+      context
+    );
   }
   if (recommendedBump === undefined && lastTag) return context;
   const bump = recommendedBump?.releaseType ?? 'patch';
@@ -110,11 +113,13 @@ async function nextVersionNx(
 
   const getNextVersion = async (project: string) => {
     info(!isOutputJson, `run for ${chalk.bold(project)}`);
-    const versions = (await nextVersion(context, {
-      debug: options.debug,
-      tagPrefix: `${project}/${mainTagPrefix}`,
-      bump: options.bump,
-    }))?.versions;
+    const versions = (
+      await nextVersion(context, {
+        debug: options.debug,
+        tagPrefix: `${project}/${mainTagPrefix}`,
+        bump: options.bump,
+      })
+    )?.versions;
     if (versions?.length) {
       nextVersionResult.push({ project, tag: versions[0].tag, version: versions[0].version });
     }

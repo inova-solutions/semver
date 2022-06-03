@@ -10,7 +10,7 @@ For [node](https://nodejs.org/en/about/) projects we recommend installing @inova
 Then in the CI environment: `npx semver bump`
 
 **Global :**
-For other project types you can install @inova/semver globally:  `npm install -g @inova/semver`
+For other project types you can install @inova/semver globally: `npm install -g @inova/semver`
 
 ## Configuration
 
@@ -53,6 +53,6 @@ Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`.
 
 ## Commands
 
-To show the commands list you can run  `npx semver --help` or just `semver --help` if you installed @inova/semver globally.
+To show the commands list you can run `npx semver --help` or just `semver --help` if you installed @inova/semver globally.
 
 To see what options the command support run `semver [command] -h` eg. `semver bump -h`.
