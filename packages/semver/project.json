@@ -1,5 +1,5 @@
 {
-  "root": "packages/semver",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/semver",
   "projectType": "library",
   "targets": {
@@ -24,7 +24,7 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["coverage/packages/semver"],
       "options": {
-        "jestConfig": "packages/semver/jest.config.js",
+        "jestConfig": "packages/semver/jest.config.ts",
         "passWithNoTests": true
       }
     }

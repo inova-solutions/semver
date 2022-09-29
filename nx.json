@@ -1,5 +1,5 @@
 {
-  "extends": "@nrwl/workspace/presets/npm.json",
+  "extends": "nx/presets/npm.json",
   "npmScope": "inova",
   "affected": {
     "defaultBase": "main"
@@ -16,5 +16,6 @@
   },
   "cli": {
     "defaultCollection": "@nrwl/workspace"
-  }
+  },
+  "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
