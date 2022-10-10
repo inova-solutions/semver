@@ -2,7 +2,7 @@ import { Task } from '@nrwl/devkit';
 import { exec } from 'child_process';
 
 export async function nxAffectedProjects(base?: string): Promise<string[]> {
-  const baseCmd = 'npx nx print-affected --target=build';
+  const baseCmd = 'npx nx print-affected --target=build --type=app';
   const cmd = base ? `${baseCmd} --base=${base} --head=HEAD` : `${baseCmd} --all`;
 
   return new Promise<string[]>((resolve, reject) => {
