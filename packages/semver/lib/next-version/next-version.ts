@@ -66,7 +66,7 @@ export async function nextVersion(context: BaseContext, options: NextVersionOpti
 
   let packageTags: VersionResult[] = [];
   if (options.workspace === 'nx') {
-    packageTags = await nextVersionNx(context, { bump, tagPrefix, debug: options.debug, path: options.path }, lastTag);
+    packageTags = await nextVersionNx(context, { bump, tagPrefix, debug: options.debug, path: options.path, projectType: options.projectType }, lastTag);
   }
 
   const incrementedVersion = increment(lastTag, lastReleaseTag, bump, channel, isSwitchingToStable);
