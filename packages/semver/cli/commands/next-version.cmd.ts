@@ -34,6 +34,10 @@ export function addOptions(cmd: Command): Command {
     )
     .option('--path <path>', 'Specify the path to calculate recommended bump only with git commits related to the path')
     .option('-f, --outputFile <filePath>', 'Path to the file into which the output should be written')
+    .option(
+      '-t, --projectType <projectType>',
+      'Filtering project by type can be set to `app` oder `lib`. Works only with nx workspaces.'
+    )
     .option('-o, --output <output>', 'Set to "json" for a json output instead of standard console logs.')
     .option('-d, --debug', 'Output debugging information');
 }

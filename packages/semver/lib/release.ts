@@ -3,7 +3,7 @@ import { existsSync, readFile, writeFile, rm } from 'fs';
 import { debug, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
-import { BaseContext, BumpOptions, VersionResult } from './models';
+import { BaseContext, BumpOptions, ProjectType, VersionResult } from './models';
 
 /**
  * Create a new release.
@@ -44,7 +44,10 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
 
   // bump version in nx projects if package.json exists
   if (options.workspace === 'nx') {
-    await bumpNxProjects(ctx.versions.filter((nextVersion) => nextVersion.project));
+    await bumpNxProjects(
+      ctx.versions.filter((nextVersion) => nextVersion.project),
+      options.projectType
+    );
     hasChanges = true;
   }
 
@@ -68,8 +71,8 @@ function getMainVersion(nextVersions: VersionResult[]) {
   return nextVersions.filter((result) => !result.project).filter((tag) => validSemver(tag.version))[0];
 }
 
-async function bumpNxProjects(nextVersions: VersionResult[]) {
-  const allProjects = await nxAffectedProjects(undefined);
+async function bumpNxProjects(nextVersions: VersionResult[], projectType: ProjectType) {
+  const allProjects = await nxAffectedProjects(undefined, projectType);
 
   await Promise.all(
     nextVersions.map(async (tag) => {

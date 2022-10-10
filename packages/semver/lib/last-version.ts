@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { lastSemverTag } from './git-helpers';
 import { debug, info } from './logger';
-import { BaseContext, Channel, LastVersionOptions, OutputFormat, VersionResult } from './models';
+import { BaseContext, Channel, LastVersionOptions, OutputFormat, ProjectType, VersionResult } from './models';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { writeFile } from './utils';
 
@@ -21,7 +21,7 @@ export async function lastVersion(context: BaseContext, options: LastVersionOpti
 
   const packageTags: VersionResult[] = lastTag ? [{ tag: lastTag, version: lastTag }] : [];
   if (options.workspace === 'nx') {
-    packageTags.push(...(await lastVersionNx(channel, options.output)));
+    packageTags.push(...(await lastVersionNx(channel, options.output, options.projectType)));
   }
   context.versions = packageTags;
 
@@ -32,9 +32,13 @@ export async function lastVersion(context: BaseContext, options: LastVersionOpti
   return context;
 }
 
-async function lastVersionNx(channel: Channel, outputFormat: OutputFormat): Promise<VersionResult[]> {
+async function lastVersionNx(
+  channel: Channel,
+  outputFormat: OutputFormat,
+  projectType: ProjectType
+): Promise<VersionResult[]> {
   const isOutputJson = outputFormat === 'json';
-  const projects = await nxAffectedProjects();
+  const projects = await nxAffectedProjects(undefined, projectType);
   const nextVersionResult: VersionResult[] = [];
 
   const getLastVersion = async (project: string) => {

@@ -13,6 +13,10 @@ export type Channel = 'stable' | 'rc' | 'beta';
  * Console output format.
  */
 export type OutputFormat = 'default' | 'json';
+/**
+ * Project types for the affected command.
+ */
+export type ProjectType = 'app' | 'lib' | 'all' ;
 
 export interface LastVersionOptions {
   debug?: boolean;
@@ -20,6 +24,7 @@ export interface LastVersionOptions {
   outputFile?: string;
   output?: OutputFormat;
   channel?: Channel;
+  projectType?: ProjectType;
 }
 
 export interface NextVersionOptions extends Omit<LastVersionOptions, 'channel'> {

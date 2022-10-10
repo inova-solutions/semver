@@ -108,7 +108,7 @@ async function nextVersionNx(
 ): Promise<VersionResult[]> {
   const isOutputJson = options.output === 'json';
   const mainTagPrefix = options.tagPrefix ? options.tagPrefix : '';
-  const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined);
+  const projects = await nxAffectedProjects(lastTag ? `${mainTagPrefix}${lastTag}` : undefined, options.projectType);
   const nextVersionResult: VersionResult[] = [];
 
   const getNextVersion = async (project: string) => {
