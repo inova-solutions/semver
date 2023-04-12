@@ -620,6 +620,39 @@ describe('nextVersion in release, stable mode is enabled', () => {
     // assert
     expect(version[0].tag).toEqual('1.1.0');
   });
+
+  it('patch on an old release branch generates the correct version', async () => {
+    // arrange
+    const config = await getConfig();
+    config.releaseCandidate = false;
+
+    // -- init main
+    const { cwd } = await gitRepo(false);
+    await commitAndTag('feat: first feat', '1.0.0-beta.1', cwd);
+    await commitAndTag('feat: next feat', '1.0.0-beta.2', cwd);
+    // -- create release branch 1
+    await gitCheckout('releases/1.0', 'create', { cwd });
+    await gitTagVersion('1.0.0-rc.1', undefined, { cwd });
+    await commitAndTag('repo: set releaseCandidate to false', '1.0.0', cwd);
+
+    // -- back to main and a new feat
+    await gitCheckout('main', 'checkout', { cwd });
+    await commitAndTag('feat: new feat in main', '1.1.0-beta.1', cwd);
+
+    // -- create release branch 2
+    await gitCheckout('releases/2.0', 'create', { cwd });
+    await gitTagVersion('1.1.0', undefined, { cwd });
+
+    // -- back to release branch 1 and a patch
+    await gitCheckout('releases/1.0', 'checkout', { cwd });
+    await gitCommits(['fix: a patch'], { cwd });
+
+    // act
+    const version = await testNextVersion(cwd, config, {});
+
+    // assert
+    expect(version[0].tag).toEqual('1.0.1');
+  });
 });
 
 describe('nextVersion in main, with tagPrefix', () => {

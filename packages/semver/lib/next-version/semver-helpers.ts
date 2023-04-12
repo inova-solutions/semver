@@ -77,7 +77,7 @@ function incrementRelease(currentVersion: SemVer, lastRelease: SemVer, bump: Rel
   if (bump === 'major' || bump === 'minor')
     throw new Error('only patches are allowed, if branch has switched from rc to stable');
 
-  return incSemver(lastRelease, bump);
+  return incSemver(currentVersion, bump);
 }
 
 function cutPrerelease(version: SemVer): SemVer {
