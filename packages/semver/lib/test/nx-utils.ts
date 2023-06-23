@@ -26,6 +26,9 @@ export async function createWorkspace(name: string): Promise<string> {
 
   // sync default branch name
   const nxJson = await readNxJson(cwd);
+  if (!nxJson.affected) {
+    nxJson.affected = {};
+  }
   nxJson.affected.defaultBase = await getBranchName(cwd);
   await updateNxJson(nxJson, cwd);
   // commit change
