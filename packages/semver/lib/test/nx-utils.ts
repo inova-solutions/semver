@@ -12,7 +12,7 @@ import { exec } from 'child_process';
  */
 export async function createWorkspace(name: string): Promise<string> {
   let cwd = tempDir();
-  const createCmd = `npx --yes create-nx-workspace --preset=npm --name=${name} --nx-cloud=false --interactive=false --skipGit=true`;
+  const createCmd = `npx --yes create-nx-workspace@16 --preset=ts --name=${name} --nx-cloud=false --interactive=false --skipGit=true`;
 
   await runCmd(createCmd, cwd);
   cwd = join(cwd, name);
@@ -44,7 +44,7 @@ export async function createWorkspace(name: string): Promise<string> {
  * @param cwd Working dir. Path to the workspace.
  */
 export async function generateLibrary(name: string, cwd: string) {
-  const createCmd = `npx nx g library ${name} --buildable`;
+  const createCmd = `npx nx g library ${name} --bundler=tsc --unitTestRunner=none`;
   await runCmd(createCmd, cwd);
 
   // commit change

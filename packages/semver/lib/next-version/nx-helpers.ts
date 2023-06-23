@@ -1,11 +1,10 @@
-import { Task } from '@nrwl/devkit';
 import { exec } from 'child_process';
 import { ProjectType } from '../models';
 
 export async function nxAffectedProjects(base?: string, type: ProjectType = 'all'): Promise<string[]> {
-  let baseCmd = 'npx nx print-affected --target=build';
-  if (type !== 'all') baseCmd = `${baseCmd} --type=${type}`;
-  const cmd = base ? `${baseCmd} --base=${base} --head=HEAD` : `${baseCmd} --all`;
+  let baseCmd = 'npx nx show projects';
+  if (type !== 'all') baseCmd = `${baseCmd} --pattern=*-${type}`;
+  const cmd = base ? `${baseCmd} --affected --base=${base} --head=HEAD` : `${baseCmd}`;
 
   return new Promise<string[]>((resolve, reject) => {
     exec(cmd, (error, stdout) => {
@@ -13,12 +12,12 @@ export async function nxAffectedProjects(base?: string, type: ProjectType = 'all
         reject(error);
         return;
       }
-      const tasks: Task[] = JSON.parse(stdout)?.tasks;
-      if (!tasks) {
+      const projects: string[] = stdout.split('\n');
+      if (!projects) {
         reject('The command "nx print-affected" does not return the expected output');
         return;
       }
-      resolve(tasks.map((k) => k.target.project));
+      resolve(projects.filter(p => !!p));
     });
   });
 }

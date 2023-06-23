@@ -12,7 +12,7 @@ let workspacePath;
 describe('nextVersion in main, for nx workspace', () => {
   jest.setTimeout(90000);
 
-  beforeAll(() => initWorkspace());
+ beforeAll(() => initWorkspace());
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
