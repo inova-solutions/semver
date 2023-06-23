@@ -1,10 +1,11 @@
 {
+  "name": "semver",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/semver",
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/semver",
@@ -14,15 +15,15 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/semver/**/*.ts"]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/semver"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/semver"],
       "options": {
         "jestConfig": "packages/semver/jest.config.ts",
         "passWithNoTests": true
