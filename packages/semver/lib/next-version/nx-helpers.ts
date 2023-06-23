@@ -17,7 +17,7 @@ export async function nxAffectedProjects(base?: string, type: ProjectType = 'all
         reject('The command "nx print-affected" does not return the expected output');
         return;
       }
-      resolve(projects.filter(p => !!p));
+      resolve(projects.filter((p) => !!p).filter((p) => (p.endsWith('app') && type === 'app') || type != 'app'));
     });
   });
 }
