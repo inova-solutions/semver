@@ -34,6 +34,9 @@
 ## Package Manager And Commands
 
 - This repo uses `npm`, not `pnpm` or `yarn`.
+- Before running CLI scripts locally, install dependencies in both places:
+  - `npm ci` in the workspace root
+  - `npm ci` in `packages/semver`
 - Prefer `npm exec nx run semver:build`, `npm exec nx run semver:test`, and `npm exec nx run semver:lint`.
 - Useful root scripts for local behavior checks are:
   - `npm run start`
@@ -42,6 +45,7 @@
   - `npm run bump`
   - `npm run local-build`
 - The repo contains both a root `package-lock.json` and `packages/semver/package-lock.json`. If you change dependencies for the published package, review whether both lockfiles need updates.
+- If a root script such as `npm run next-version` fails with missing package modules like `commander` or `figlet`, verify the `packages/semver` install first.
 
 ## Domain Context
 
