@@ -19,7 +19,7 @@ jobs:
 
         # min. npm v7 is required for the tests
       - name: update npm
-        if: startsWith(matrix.node-version, '14')
+        if: startsWith(matrix.node-version, '22')
         run: npm install -g npm@7
 
         # install dependencies for root and all sub packages
