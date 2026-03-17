@@ -1,4 +1,4 @@
-import { SemVer, valid as validSemver, gt as gtSemver, inc as incSemver, eq as eqSemver } from 'semver';
+import { SemVer, valid as validSemver, inc as incSemver, eq as eqSemver } from 'semver';
 import { Channel, ReleaseType } from '../models';
 
 /**
@@ -15,7 +15,7 @@ export function increment(
   lastRelease: string,
   bump: ReleaseType,
   channel: Channel,
-  isSwitchingToStable = false
+  isSwitchingToStable = false,
 ): string {
   if (!version && !lastRelease) {
     return channel === 'stable' ? '1.0.0' : `1.0.0-${channel}.1`;
@@ -47,7 +47,7 @@ export function increment(
 
 function incrementPrerelease(currentVersion: SemVer, lastRelease: SemVer, bump: ReleaseType, channel: Channel): string {
   // get the higher version
-  const lastTag = gtSemver(currentVersion, lastRelease, { includePrerelease: true }) ? currentVersion : lastRelease;
+  const lastTag = currentVersion.compare(lastRelease) > 0 ? currentVersion : lastRelease;
   const lastVersionIsPrerelease = lastTag.prerelease[0] === channel;
   const noStableRelease = eqSemver(lastRelease, '0.0.0');
 

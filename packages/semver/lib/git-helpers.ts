@@ -1,15 +1,13 @@
-import * as findVersions from 'find-versions';
-import * as _gitSemverTags from 'git-semver-tags';
+import gitSemverTags = require('git-semver-tags');
 import { exec, execSync, StdioOptions } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { isBetaBranch, isReleaseBranch } from './config';
 import { ERRORS } from './constants';
-import { VstsEnv } from 'env-ci';
-import * as envCi from 'env-ci';
+import envCi, { VstsEnv } from 'env-ci';
 import { Channel } from './models';
 import { warn } from './logger';
 
-export type SemverTagOptions = Pick<_gitSemverTags.Options, 'tagPrefix'> & {
+export type SemverTagOptions = Pick<gitSemverTags.Options, 'tagPrefix'> & {
   channel?: Channel;
   ignoreBranch?: boolean;
 };
@@ -76,7 +74,7 @@ export async function getGitVersion(): Promise<string> {
         reject(error);
         return;
       }
-      resolve(findVersions(stdout)[0]);
+      resolve(parseGitVersion(stdout));
     });
   });
 }
@@ -87,24 +85,17 @@ export async function getGitVersion(): Promise<string> {
  * @returns Git semver tags.
  */
 export async function getBranchRelatedTags(options: SemverTagOptions): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
-    _gitSemverTags(options, (error, tags) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      const filteredByPrefix = tags
-        .filter((tag) => (options.channel === 'stable' && !tag.includes('beta')) || options.channel !== 'stable') // for stable channel beta tags are not relevant
-        .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
-        .map((tag) => (options.tagPrefix ? tag.replace(options.tagPrefix, '') : tag));
+  const tags = await gitSemverTags(options);
+  const filteredByPrefix = tags
+    .filter((tag) => (options.channel === 'stable' && !tag.includes('beta')) || options.channel !== 'stable') // for stable channel beta tags are not relevant
+    .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
+    .map((tag) => (options.tagPrefix ? tag.replace(options.tagPrefix, '') : tag));
 
-      if (options.channel === 'stable') {
-        resolve(filteredByPrefix);
-      } else {
-        resolve(filterByChannel(filteredByPrefix, options.channel));
-      }
-    });
-  });
+  if (options.channel === 'stable') {
+    return filteredByPrefix;
+  }
+
+  return filterByChannel(filteredByPrefix, options.channel);
 }
 
 /**
@@ -257,6 +248,14 @@ function filterByPrefix(tags: string[], tagPrefix: string): string[] {
   return tags
     .filter((tag) => !tagPrefix || (tagPrefix && tag.startsWith(tagPrefix)))
     .map((tag) => (tagPrefix ? tag.replace(tagPrefix, '') : tag));
+}
+
+function parseGitVersion(result: string): string {
+  const version = result.match(/\d+\.\d+\.\d+/)?.[0];
+  if (!version) {
+    throw new Error(`Unable to parse git version from "${result.trim()}"`);
+  }
+  return version;
 }
 
 async function getGitHead() {

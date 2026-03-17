@@ -1,6 +1,8 @@
-import { Config, getConfig, isBetaBranch, isReleaseBranch } from './config';
-import { mockExistsSync, mockReadFile } from './test/fs.mock';
+import type { Config } from './config';
+import * as configModule from './config';
 import * as gitHelpers from './git-helpers';
+
+const { getConfig, isBetaBranch, isReleaseBranch } = configModule;
 
 describe('config, read', () => {
   afterEach(() => jest.resetAllMocks());
@@ -20,8 +22,8 @@ describe('config, read', () => {
       releaseCandidate: false,
       commitTypesToIgnore: [`ci`, `repo`, `chore`],
     };
-    mockExistsSync(true);
-    mockReadFile(null, configMock);
+    jest.spyOn(configModule.configFileAccess, 'fileExists').mockReturnValue(true);
+    jest.spyOn(configModule.configFileAccess, 'readFile').mockResolvedValue(JSON.stringify(configMock));
 
     // act
     const config = await getConfig();

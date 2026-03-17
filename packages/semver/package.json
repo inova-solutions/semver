@@ -19,23 +19,21 @@
     "semver": "./cli/semver.js"
   },
   "dependencies": {
-    "@nrwl/devkit": "^16.3.2",
-    "chalk": "^2.4.2",
-    "commander": "^9.4.0",
-    "conventional-changelog-angular": "^5.0.13",
-    "conventional-recommended-bump": "^6.1.0",
-    "env-ci": "^5.3.0",
-    "figlet": "^1.5.2",
-    "find-versions": "^4.0.0",
-    "git-semver-tags": "^4.1.1",
-    "semver": "^7.3.5"
+    "chalk": "^4.1.2",
+    "commander": "^13.1.0",
+    "conventional-changelog-angular": "^7.0.0",
+    "conventional-commits-parser": "^5.0.0",
+    "env-ci": "^7.3.0",
+    "figlet": "^1.11.0",
+    "git-semver-tags": "^7.0.1",
+    "semver": "^7.7.4"
   },
   "devDependencies": {
-    "@types/conventional-recommended-bump": "^6.1.0",
-    "@types/env-ci": "^3.1.1",
-    "@types/figlet": "^1.5.4",
-    "@types/git-semver-tags": "^4.1.1",
-    "@types/semver": "^7.3.5",
+    "@nx/devkit": "^22.5.4",
+    "@types/env-ci": "^3.1.4",
+    "@types/figlet": "^1.7.0",
+    "@types/git-semver-tags": "^7.0.0",
+    "@types/semver": "^7.7.1",
     "execa": "^5.1.1"
   }
 }
