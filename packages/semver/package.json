@@ -5,7 +5,7 @@
   "author": "Admir Ramic",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inova-solutions/semver.git"
+    "url": "git+https://github.com/inova-solutions/semver.git"
   },
   "keywords": [
     "package",
@@ -16,7 +16,7 @@
   ],
   "license": "MIT",
   "bin": {
-    "semver": "./cli/semver.js"
+    "semver": "cli/semver.js"
   },
   "dependencies": {
     "chalk": "^4.1.2",
