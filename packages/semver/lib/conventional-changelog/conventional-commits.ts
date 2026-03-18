@@ -1,18 +1,19 @@
 // Adapted from https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-recommended-bump
-import * as conventionalChangelogPresetLoader from 'conventional-changelog-preset-loader';
-import * as conventionalCommitsParser from 'conventional-commits-parser';
-import * as gitRawCommits from 'git-raw-commits';
-import * as concat from 'concat-stream';
+import { execFile } from 'child_process';
+import conventionalCommitsParser from 'conventional-commits-parser';
 import chalk from 'chalk';
 import { Commit } from 'conventional-commits-parser';
-import { Callback, Options as BumpOptions } from 'conventional-recommended-bump';
-import { presetResolver, PresetResolverResult } from './preset-resolver';
+import { loadPreset, PresetResolverResult, WhatBump } from './preset-resolver';
 import { lastSemverTag } from '../git-helpers';
 import { debug, warn } from '../logger';
 import { BaseContext, OutputFormat, ReleaseType } from '../models';
 
-const VERSIONS: Callback.Recommendation.ReleaseType[] = ['major', 'minor', 'patch'];
-type Options = Omit<BumpOptions, 'ignoreReverted' | 'skipUnstable' | 'config'> & {
+const VERSIONS: ReleaseType[] = ['major', 'minor', 'patch'];
+type Options = {
+  preset: string;
+  tagPrefix?: string;
+  path?: string;
+  whatBump?: WhatBump;
   debug?: boolean;
   output: OutputFormat;
   commitTypesToIgnore?: string[];
@@ -25,22 +26,11 @@ type Options = Omit<BumpOptions, 'ignoreReverted' | 'skipUnstable' | 'config'> &
  */
 export async function conventionalRecommendedBump(
   options: Options,
-  ctx: BaseContext
+  ctx: BaseContext,
 ): Promise<{ releaseType: ReleaseType; reason: string }> {
-  const presetPackage = loadPrestLoader(options.preset);
-  const config = await presetResolver(presetPackage);
+  const config = await loadPreset(options.preset);
 
   return await whatBump(options, config, ctx);
-}
-
-function loadPrestLoader(preset: string) {
-  try {
-    return conventionalChangelogPresetLoader(preset);
-  } catch (error) {
-    if (error.message === 'does not exist')
-      throw new Error(`Unable to load the "${preset}" preset package. Please make sure it's installed.`);
-    else throw error;
-  }
 }
 
 async function whatBump(options: Options, config: PresetResolverResult, ctx: BaseContext) {
@@ -59,39 +49,18 @@ async function whatBump(options: Options, config: PresetResolverResult, ctx: Bas
   const parserOpts = config.recommendedBumpOpts?.parserOpts ? config.recommendedBumpOpts.parserOpts : config.parserOpts;
 
   const from = tag ? (options.tagPrefix ? `${options.tagPrefix}${tag}` : tag) : undefined;
-  return new Promise<{ releaseType: ReleaseType; reason: string }>((resolve, reject) => {
-    try {
-      gitRawCommits({
-        format: '%B%n-hash-%n%H',
-        from: from,
-        path: options.path,
-      })
-        .pipe(conventionalCommitsParser(parserOpts))
-        .pipe(
-          concat((commits: Commit[]) => {
-            const commitTypesToIgnore = options.commitTypesToIgnore ?? [];
-            const relevantCommits: Commit[] = commits.filter((c) => !commitTypesToIgnore.includes(c.type));
+  const commits = await getCommits(from, options.path, parserOpts);
+  const commitTypesToIgnore = options.commitTypesToIgnore ?? [];
+  const relevantCommits: Commit[] = commits.filter((commit) => !commitTypesToIgnore.includes(commit.type));
 
-            if (!relevantCommits || !relevantCommits.length) {
-              warnNoCommits(commits?.length > 0, options.path, ctx, options.output === 'json');
-              resolve(undefined);
-              return;
-            }
+  if (!relevantCommits.length) {
+    warnNoCommits(commits.length > 0, options.path, ctx, options.output === 'json');
+    return undefined;
+  }
 
-            const result = _whatBump(relevantCommits);
-            let level: Callback.Recommendation.ReleaseType;
-
-            if (result?.level >= 0) {
-              level = VERSIONS[result.level];
-            }
-
-            resolve({ releaseType: level, reason: result.reason });
-          })
-        );
-    } catch (error) {
-      reject(error);
-    }
-  });
+  const result = await Promise.resolve(_whatBump(relevantCommits));
+  const level = result?.level != null ? VERSIONS[result.level] : undefined;
+  return { releaseType: level, reason: result?.reason };
 }
 
 function warnNoCommits(hasIrrelevantCommits: boolean, path: string, ctx: BaseContext, isOutputJson: boolean) {
@@ -104,4 +73,51 @@ function warnNoCommits(hasIrrelevantCommits: boolean, path: string, ctx: BaseCon
   }
 
   if (!isOutputJson) warn(ctx.warning);
+}
+
+async function getCommits(from: string | undefined, path: string | undefined, parserOpts: unknown): Promise<Commit[]> {
+  const DELIMITER = '------------------------ >8 ------------------------';
+  const gitArgs = ['log', `--format=%B%n-hash-%n%H%n${DELIMITER}`];
+
+  if (from) {
+    gitArgs.push(`${from}..HEAD`);
+  }
+
+  if (path) {
+    gitArgs.push('--', path);
+  }
+
+  const stdout = await runGitLog(gitArgs);
+  return stdout
+    .split(`${DELIMITER}\n`)
+    .map((commit) => commit.trim())
+    .filter(Boolean)
+    .map((commit) => parseCommit(commit, parserOpts))
+    .filter((commit): commit is Commit => Boolean(commit));
+}
+
+function parseCommit(commit: string, parserOpts: unknown): Commit | null {
+  const parserWithSync = conventionalCommitsParser as typeof conventionalCommitsParser & {
+    sync: (rawCommit: string, options: unknown) => Commit | null;
+  };
+
+  return parserWithSync.sync(commit, parserOpts);
+}
+
+function runGitLog(args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile('git', args, { maxBuffer: Infinity }, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      if (stderr) {
+        reject(new Error(stderr.toString()));
+        return;
+      }
+
+      resolve(stdout.toString());
+    });
+  });
 }

@@ -1,10 +1,9 @@
-import { Callback } from 'conventional-recommended-bump';
 import { Config } from './config';
 
 /**
  * Type of version bump, `major`, `minor` or `patch`.
  */
-export type ReleaseType = Callback.Recommendation.ReleaseType;
+export type ReleaseType = 'major' | 'minor' | 'patch';
 /**
  * Release channel `beta`, `rc` or `stable`.
  */
@@ -16,7 +15,7 @@ export type OutputFormat = 'default' | 'json';
 /**
  * Project types for the affected command.
  */
-export type ProjectType = 'app' | 'lib' | 'all' ;
+export type ProjectType = 'app' | 'lib' | 'all';
 
 export interface LastVersionOptions {
   debug?: boolean;

@@ -2,6 +2,20 @@ import { readFile as _readFile, existsSync } from 'fs';
 import { CONFIG_FILE } from './constants';
 import { getCurrentBranch } from './git-helpers';
 
+export const configFileAccess = {
+  fileExists(path: string) {
+    return existsSync(path);
+  },
+  async readFile(path: string) {
+    return new Promise<string>((resolve, reject) => {
+      _readFile(path, (error, data) => {
+        if (error) reject(error);
+        resolve(data.toString());
+      });
+    });
+  },
+};
+
 /**
  * Model for the config file `.semver.json`.
  */
@@ -50,8 +64,8 @@ export async function getConfig(): Promise<Config> {
   };
 
   let config: Config = defaultConfig;
-  if (existsSync(CONFIG_FILE)) {
-    config = Object.assign(defaultConfig, JSON.parse(await readFile(CONFIG_FILE)));
+  if (configFileAccess.fileExists(CONFIG_FILE)) {
+    config = Object.assign(defaultConfig, JSON.parse(await configFileAccess.readFile(CONFIG_FILE)));
   }
 
   return config;
@@ -75,13 +89,4 @@ export async function isBetaBranch() {
   const config = await getConfig();
   const branchName = await getCurrentBranch();
   return config.betaBranchName === branchName;
-}
-
-async function readFile(path: string) {
-  return new Promise<string>((resolve, reject) => {
-    _readFile(path, (error, data) => {
-      if (error) reject(error);
-      resolve(data.toString());
-    });
-  });
 }

@@ -77,12 +77,12 @@ describe('semver-helpers, increment release builds in release channel', () => {
   });
 
   it('new feat same release should fail', () => {
-    expect(() => increment('1.0.0', '1.0.0', 'minor', 'stable')).toThrowError(
+    expect(() => increment('1.0.0', '1.0.0', 'minor', 'stable')).toThrow(
       'only patches are allowed, if branch has switched from rc to stable'
     );
   });
   it('new breaking change in an existing release should fail', () => {
-    expect(() => increment('1.0.0', '1.0.0', 'major', 'stable')).toThrowError(
+    expect(() => increment('1.0.0', '1.0.0', 'major', 'stable')).toThrow(
       'only patches are allowed, if branch has switched from rc to stable'
     );
   });

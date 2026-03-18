@@ -1,5 +1,5 @@
 import { readFile, writeFile } from 'fs';
-import { NxJsonConfiguration } from '@nrwl/devkit';
+import type { NxJsonConfiguration } from '@nx/devkit';
 import { join } from 'path';
 import { getCurrentBranch } from '../git-helpers';
 import { tempDir } from './path-utils';

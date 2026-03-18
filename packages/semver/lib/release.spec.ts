@@ -9,6 +9,11 @@ import { readFile } from 'fs';
 import { join } from 'path';
 import { BaseContext, BumpOptions } from './models';
 
+// These tests use temporary git repos and should not inherit the outer CI PR state.
+beforeEach(() => {
+  jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+});
+
 describe('release', () => {
   jest.setTimeout(90000);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -90,7 +95,7 @@ describe('release', () => {
     const gitTagsAfterRelease = await getGitTags(cwd);
     expect(gitTagsAfterRelease).not.toContain('1.0.0-beta.2');
     expect(warnSpy).toHaveBeenCalledWith(
-      `The local branch is behind the remote one, therefore a new version won't be published.`
+      `The local branch is behind the remote one, therefore a new version won't be published.`,
     );
   });
 

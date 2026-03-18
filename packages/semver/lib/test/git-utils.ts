@@ -1,5 +1,5 @@
 // copy of: https://github.com/semantic-release/semantic-release/blob/master/test/helpers/git-utils.js
-import * as execa from 'execa';
+import execa from 'execa';
 import { dirname, join } from 'path';
 import { mkdirSync, writeFileSync } from 'fs';
 import { tempDir, fileUrl } from './path-utils';
@@ -66,14 +66,9 @@ export async function gitTagVersion(tagName: string, sha: string, execaOptions: 
  * @param execaOptions Options to pass to `execa`.
  */
 export async function gitCommits(messages: string[], execaOptions: execa.Options<string>) {
-  await Promise.all(
-    messages.map(
-      async (message) =>
-        (
-          await execa('git', ['commit', '-m', message, '--allow-empty', '--no-gpg-sign'], execaOptions)
-        ).stdout
-    )
-  );
+  for (const message of messages) {
+    await execa('git', ['commit', '-m', message, '--allow-empty', '--no-gpg-sign'], execaOptions);
+  }
 }
 
 /**
@@ -87,7 +82,7 @@ export async function gitCommitFile(
   fileName: string,
   message: string,
   execaOptions: execa.Options<string>,
-  fileContent?: string
+  fileContent?: string,
 ) {
   const dir = join(execaOptions.cwd, dirname(fileName));
   const fullName = join(execaOptions.cwd, fileName);
@@ -167,7 +162,7 @@ async function gitShallowClone(repositoryUrl: string, branch = 'main', depth = 1
     ['clone', '--no-hardlinks', '--no-tags', '-b', branch, '--depth', depth.toString(), repositoryUrl, cwd],
     {
       cwd,
-    }
+    },
   );
 
   await configGitUser(cwd);

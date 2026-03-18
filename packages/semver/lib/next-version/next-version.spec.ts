@@ -7,6 +7,11 @@ import * as gitHelpers from '../git-helpers';
 import * as logger from '../logger';
 import { getCurrentBranch } from '../git-helpers';
 
+// These tests use temporary git repos and should not inherit the outer CI PR state.
+beforeEach(() => {
+  jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+});
+
 describe('nextVersion in main, no release branch exists', () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
@@ -109,7 +114,7 @@ describe('nextVersion in main, no release branch exists', () => {
         `feat: breaking change feature
     BREAKING CHANGE: oh-no`,
       ],
-      { cwd }
+      { cwd },
     );
 
     // act
@@ -223,7 +228,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     BREAKING CHANGE: oh-no
     `,
       ],
-      { cwd }
+      { cwd },
     );
 
     // act
@@ -249,7 +254,7 @@ describe('nextVersion in main, the first release branch is in rc mode', () => {
     BREAKING CHANGE: oh-no
     `,
       ],
-      { cwd }
+      { cwd },
     );
     await gitTagVersion('2.0.0-beta.1', undefined, { cwd });
     await gitCommits(['fix: fix for the breaking'], { cwd });
@@ -356,7 +361,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     BREAKING CHANGE: oh-no
     `,
       ],
-      { cwd }
+      { cwd },
     );
 
     // act
@@ -383,7 +388,7 @@ describe('nextVersion in main, the first release branch is in stable mode', () =
     BREAKING CHANGE: oh-no
     `,
       ],
-      { cwd }
+      { cwd },
     );
     await gitTagVersion('2.0.0-beta.1', undefined, { cwd });
     await gitCommits(['fix: fix for the breaking'], { cwd });
@@ -478,7 +483,7 @@ describe('nextVersion in release, rc mode is enabled', () => {
       `feat: new feature with breaking api
     BREAKING CHANGE: oh-no`,
       '2.0.0-beta.1',
-      cwd
+      cwd,
     );
     // -- switch back to release and add a feature
     await gitCheckout('releases/1.0', 'checkout', { cwd });
@@ -691,7 +696,7 @@ describe('nextVersion in main, with tagPrefix', () => {
         `feat: breaking change feature
     BREAKING CHANGE: oh-no`,
       ],
-      { cwd }
+      { cwd },
     );
 
     // act
@@ -803,7 +808,7 @@ describe('nextVersion unknown branch', () => {
     // assert
     expect(version).toBeNull();
     expect(warnSpy).toHaveBeenCalledWith(
-      `This run was triggered by a pull request and therefore a new version won't be published.`
+      `This run was triggered by a pull request and therefore a new version won't be published.`,
     );
   });
 });

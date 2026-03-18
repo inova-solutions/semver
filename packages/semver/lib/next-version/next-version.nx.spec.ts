@@ -6,13 +6,19 @@ import { NextVersionOptions, VersionResult } from '../models';
 import { readFile as _readFile } from 'fs';
 import { join } from 'path';
 import { getCurrentBranch } from '../git-helpers';
+import * as gitHelpers from '../git-helpers';
 
 let workspacePath;
 
-describe('nextVersion in main, for nx workspace', () => {
-  jest.setTimeout(90000);
+// These tests use a temporary Nx workspace and should not inherit the outer CI PR state.
+beforeEach(() => {
+  jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+});
 
- beforeAll(() => initWorkspace());
+describe('nextVersion in main, for nx workspace', () => {
+  jest.setTimeout(240000);
+
+  beforeAll(() => initWorkspace());
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
@@ -64,7 +70,7 @@ describe('nextVersion in main, for nx workspace', () => {
     await gitTagVersion('lib-b/1.0.0-beta.1', undefined, { cwd });
     await gitTagVersion('lib-c/1.0.0-beta.1', undefined, { cwd });
 
-    await gitCommitFile('packages/lib-b/src/feat-1.ts', 'fix(lib-b): a new feat in the b lib', { cwd });
+    await gitCommitFile('lib-b/src/feat-1.ts', 'fix(lib-b): a new feat in the b lib', { cwd });
 
     // act
     const versions = await testNextVersion(cwd, config, {
@@ -91,7 +97,7 @@ describe('nextVersion in main, for nx workspace', () => {
     await gitTagVersion('lib-b/v1.0.0-beta.1', undefined, { cwd });
     await gitTagVersion('lib-c/v1.0.0-beta.1', undefined, { cwd });
 
-    await gitCommitFile('packages/lib-c/src/feat-1c.ts', 'fix(lib-c): a new feat in the c lib', { cwd });
+    await gitCommitFile('lib-c/src/feat-1c.ts', 'fix(lib-c): a new feat in the c lib', { cwd });
 
     // act
     const versions = await testNextVersion(cwd, config, {
