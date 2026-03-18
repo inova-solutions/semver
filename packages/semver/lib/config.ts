@@ -90,11 +90,3 @@ export async function isBetaBranch() {
   const branchName = await getCurrentBranch();
   return config.betaBranchName === branchName;
 }
-
-export function fileExists(path: string) {
-  return configFileAccess.fileExists(path);
-}
-
-export async function readFile(path: string) {
-  return configFileAccess.readFile(path);
-}

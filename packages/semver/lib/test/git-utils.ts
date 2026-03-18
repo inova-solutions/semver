@@ -66,12 +66,9 @@ export async function gitTagVersion(tagName: string, sha: string, execaOptions: 
  * @param execaOptions Options to pass to `execa`.
  */
 export async function gitCommits(messages: string[], execaOptions: execa.Options<string>) {
-  await Promise.all(
-    messages.map(
-      async (message) =>
-        (await execa('git', ['commit', '-m', message, '--allow-empty', '--no-gpg-sign'], execaOptions)).stdout,
-    ),
-  );
+  for (const message of messages) {
+    await execa('git', ['commit', '-m', message, '--allow-empty', '--no-gpg-sign'], execaOptions);
+  }
 }
 
 /**

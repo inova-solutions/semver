@@ -6,8 +6,14 @@ import { NextVersionOptions, VersionResult } from '../models';
 import { readFile as _readFile } from 'fs';
 import { join } from 'path';
 import { getCurrentBranch } from '../git-helpers';
+import * as gitHelpers from '../git-helpers';
 
 let workspacePath;
+
+// These tests use a temporary Nx workspace and should not inherit the outer CI PR state.
+beforeEach(() => {
+  jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+});
 
 describe('nextVersion in main, for nx workspace', () => {
   jest.setTimeout(240000);
