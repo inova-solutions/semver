@@ -1,6 +1,6 @@
 import { gitRepo, gitCommits, gitTagVersion, gitCommitFile, push, gitCheckout, getLastCommit } from './test/git-utils';
 import { release } from './release';
-import { Config, getConfig } from './config';
+import { configFileAccess, Config, getConfig } from './config';
 import { getChannel, nextVersion } from './next-version/next-version';
 import { getBranchRelatedTags, getCurrentBranch } from './git-helpers';
 import * as logger from './logger';
@@ -12,6 +12,7 @@ import { BaseContext, BumpOptions } from './models';
 // These tests use temporary git repos and should not inherit the outer CI PR state.
 beforeEach(() => {
   jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+  jest.spyOn(configFileAccess, 'fileExists').mockReturnValue(false);
 });
 
 describe('release', () => {

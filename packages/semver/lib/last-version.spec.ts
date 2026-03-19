@@ -1,4 +1,4 @@
-import { getConfig } from './config';
+import { configFileAccess, getConfig } from './config';
 import { getCurrentBranch } from './git-helpers';
 import { LastVersionOptions } from './models';
 import { gitCheckout, gitCommits, gitRepo, gitTagVersion } from './test/git-utils';
@@ -6,8 +6,10 @@ import { lastVersion } from './last-version';
 import { ERRORS } from './constants';
 
 describe('nextVersion', () => {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  beforeEach(() => jest.spyOn(console, 'log').mockImplementation(() => {}));
+  beforeEach(() => {
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    jest.spyOn(configFileAccess, 'fileExists').mockReturnValue(false);
+  });
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();

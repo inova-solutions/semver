@@ -5,6 +5,7 @@ import * as gitHelpers from './git-helpers';
 const { getConfig, isBetaBranch, isReleaseBranch } = configModule;
 
 describe('config, read', () => {
+  beforeEach(() => jest.spyOn(configModule.configFileAccess, 'fileExists').mockReturnValue(false));
   afterEach(() => jest.resetAllMocks());
   it('default config works', async () => {
     expect(await getConfig()).toEqual<Config>({
@@ -40,6 +41,7 @@ describe('config, read', () => {
 });
 
 describe('isReleaseBranch', () => {
+  beforeEach(() => jest.spyOn(configModule.configFileAccess, 'fileExists').mockReturnValue(false));
   afterEach(() => jest.resetAllMocks());
 
   [
@@ -58,6 +60,7 @@ describe('isReleaseBranch', () => {
 });
 
 describe('isBetaBranch', () => {
+  beforeEach(() => jest.spyOn(configModule.configFileAccess, 'fileExists').mockReturnValue(false));
   afterEach(() => jest.resetAllMocks());
 
   [
