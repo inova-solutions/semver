@@ -86,5 +86,16 @@ jobs:
           echo "Package name: $(npm pkg get name)"
           echo "Package version: $(npm pkg get version)"
 
+          NPM_DIST_TAG="$(node -p "const version = require('./package.json').version; const match = version.match(/-([0-9A-Za-z-]+)(?:\\.|$)/); match ? match[1] : ''")"
+          if [ -n "$NPM_DIST_TAG" ]; then
+            echo "npm dist-tag: $NPM_DIST_TAG"
+          else
+            echo "npm dist-tag: latest"
+          fi
+
           echo "== publish =="
-          npm publish --ignore-scripts
+          if [ -n "$NPM_DIST_TAG" ]; then
+            npm publish --ignore-scripts --tag "$NPM_DIST_TAG"
+          else
+            npm publish --ignore-scripts
+          fi

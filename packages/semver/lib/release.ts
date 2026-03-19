@@ -8,8 +8,8 @@ import { BaseContext, BumpOptions, ProjectType, VersionResult } from './models';
 /**
  * Create a new release.
  * Bump the version in the package.json if this file exists and add the git tags.
+ * @param ctx Context with all needed information.
  * @param options Options.
- * @param nextVersions Tags for the release.
  */
 export async function release(ctx: BaseContext, options: BumpOptions): Promise<BaseContext> {
   const isOutputJson = options.output === 'json';
