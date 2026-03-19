@@ -1,4 +1,3 @@
-import gitSemverTags = require('git-semver-tags');
 import { exec, execSync, StdioOptions } from 'child_process';
 import { valid as validSemver, sort as sortSemver, SemVer } from 'semver';
 import { isBetaBranch, isReleaseBranch } from './config';
@@ -7,7 +6,14 @@ import envCi, { VstsEnv } from 'env-ci';
 import { Channel } from './models';
 import { warn } from './logger';
 
-export type SemverTagOptions = Pick<gitSemverTags.Options, 'tagPrefix'> & {
+const GIT_SEMVER_TAGS_REGEX = /tag:\s*(.+?)[,)]/gi;
+const GIT_LOG_TAGS_CMD = 'git log --decorate --no-color --date-order';
+const UNSTABLE_TAG_REGEX = /.+-\w+\.\d+$/;
+const GIT_LOG_MAX_BUFFER = 1024 * 1024 * 50;
+
+export type SemverTagOptions = {
+  tagPrefix?: string;
+  skipUnstable?: boolean;
   channel?: Channel;
   ignoreBranch?: boolean;
 };
@@ -85,7 +91,7 @@ export async function getGitVersion(): Promise<string> {
  * @returns Git semver tags.
  */
 export async function getBranchRelatedTags(options: SemverTagOptions): Promise<string[]> {
-  const tags = await gitSemverTags(options);
+  const tags = await getReachableSemverTags(options);
   const filteredByPrefix = tags
     .filter((tag) => (options.channel === 'stable' && !tag.includes('beta')) || options.channel !== 'stable') // for stable channel beta tags are not relevant
     .filter((tag) => !options.tagPrefix || (options.tagPrefix && tag.startsWith(options.tagPrefix)))
@@ -232,6 +238,46 @@ async function getBranchHeadDetached(): Promise<string> {
   if (!branchName) branchName = await runCMD('git show -s --pretty=%d HEAD~1');
 
   return branchName;
+}
+
+async function getReachableSemverTags(options: SemverTagOptions): Promise<string[]> {
+  return new Promise<string[]>((resolve, reject) => {
+    exec(GIT_LOG_TAGS_CMD, { maxBuffer: GIT_LOG_MAX_BUFFER }, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      const tags: string[] = [];
+
+      for (const decorations of stdout.split('\n')) {
+        GIT_SEMVER_TAGS_REGEX.lastIndex = 0;
+
+        let match: RegExpExecArray | null;
+        while ((match = GIT_SEMVER_TAGS_REGEX.exec(decorations))) {
+          const tag = match[1];
+
+          if (options.skipUnstable && UNSTABLE_TAG_REGEX.test(tag)) {
+            continue;
+          }
+
+          if (options.tagPrefix) {
+            if (tag.startsWith(options.tagPrefix)) {
+              const unprefixedTag = tag.replace(options.tagPrefix, '');
+
+              if (validSemver(unprefixedTag)) {
+                tags.push(tag);
+              }
+            }
+          } else if (validSemver(tag)) {
+            tags.push(tag);
+          }
+        }
+      }
+
+      resolve(tags);
+    });
+  });
 }
 
 function filterByChannel(tags: string[], channel: Channel): string[] {
