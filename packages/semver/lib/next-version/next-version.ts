@@ -12,7 +12,7 @@ import { writeFile } from '../utils';
 /**
  * Determine the next version for your repo or your packages in your repo, depending on your workspace type.
  * The workspace type can be defined via the `workspace` option.
- * @param config The semver configuration from `.semver.json`.
+ * @param context The context with all needed information including configuration from `.semver.json`.
  * @param options The options.
  * @returns Array of tags. Depends on the `workspace` option. If the option is not defined the array will contain only one tag for your repo.
  */
