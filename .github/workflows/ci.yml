@@ -5,6 +5,7 @@ on:
 
 permissions:
   id-token: write  # Required for OIDC to publish on npm registry
+  contents: write  # Required for chore commit on package.json
 
 jobs:
   build:
