@@ -15,10 +15,10 @@ jobs:
         node-version: [22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -46,12 +46,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/
 
       # install dependencies for root and all sub packages
@@ -69,9 +69,12 @@ jobs:
 
       - name: check semver dist exists
         id: check_semver_dist
-        uses: andstor/file-existence-action@v1
-        with:
-          files: 'dist/packages/semver/package.json'
+        run: |
+          if [ -f "dist/packages/semver/package.json" ]; then
+            echo "files_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "files_exists=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: publish semver
         if: steps.check_semver_dist.outputs.files_exists == 'true'
@@ -83,14 +86,5 @@ jobs:
           echo "Package name: $(npm pkg get name)"
           echo "Package version: $(npm pkg get version)"
 
-          echo "== npm whoami =="
-          npm whoami
-
-          echo "== npm ping =="
-          npm ping
-
-          echo "== package lookup =="
-          npm view @inova/semver version || echo "@inova/semver not found yet"
-
           echo "== publish =="
-          npm publish --ignore-scripts --access public
+          npm publish --ignore-scripts

@@ -28,14 +28,14 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
   }
 
   if (options.dryRun) {
-    info(!isOutputJson, 'would start with bump...');
+    info(!isOutputJson, 'dry-run: would start with bump...');
   } else {
     debug(options.debug, 'Start with bump...');
   }
 
   // set the commits author and commiter info and prevent the `git` CLI to prompt for username/password
   if (options.dryRun) {
-    info(!isOutputJson, 'would configure git author for release commit');
+    info(!isOutputJson, 'dry-run: would configure git author for release commit');
   } else {
     setGitAuthor();
   }
@@ -47,7 +47,7 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
     const packageJson = await readPackageJson('package.json');
     packageJson.version = mainVersion.version;
     if (options.dryRun) {
-      info(!isOutputJson, 'would update package.json');
+      info(!isOutputJson, 'dry-run: would update package.json');
     } else {
       await updatePackageJson(packageJson, 'package.json');
       debug(options.debug, 'package.json was updated');
@@ -68,8 +68,8 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
 
   if (hasChanges && !options.skipChoreCommit) {
     if (options.dryRun) {
-      info(!isOutputJson, `would create release commit chore(release): ${mainVersion.tag}`);
-      info(!isOutputJson, 'would push release commit');
+      info(!isOutputJson, `dry-run: would create release commit chore(release): ${mainVersion.tag}`);
+      info(!isOutputJson, 'dry-run: would push release commit');
     } else {
       commit(
         `chore(release): ${mainVersion.tag}
@@ -84,7 +84,7 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
   // add git tags
   ctx.versions.forEach((nextVersion) => {
     if (options.dryRun) {
-      info(!isOutputJson, `would add git tag ${nextVersion.tag} on HEAD`);
+      info(!isOutputJson, `dry-run: would add git tag ${nextVersion.tag} on HEAD`);
     } else {
       addGitTag(nextVersion.tag, 'HEAD', isOutputJson ? 'ignore' : undefined);
     }
@@ -117,7 +117,7 @@ async function bumpNxProjects(
               const packageJson = await readPackageJson(packageJsonPath);
               packageJson.version = tag.version;
               if (dryRun) {
-                info(!isOutputJson, `would update ${packageJsonPath}`);
+                info(!isOutputJson, `dry-run: would update ${packageJsonPath}`);
               } else {
                 await updatePackageJson(packageJson, packageJsonPath);
               }
@@ -179,7 +179,7 @@ async function cleanOutput(outputFile: string, dryRun = false, isOutputJson = fa
   return new Promise<void>((resolve, reject) => {
     if (outputFile && existsSync(outputFile)) {
       if (dryRun) {
-        info(!isOutputJson, `would remove ${outputFile}`);
+        info(!isOutputJson, `dry-run: would remove ${outputFile}`);
         resolve();
         return;
       }
