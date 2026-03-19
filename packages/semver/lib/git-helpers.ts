@@ -171,7 +171,11 @@ export async function push(stdio: StdioOptions = undefined): Promise<void> {
 export async function isBranchUpToDate() {
   const branch = (await getCurrentBranch()).replace('.', '\\.');
   const exp = '^(?<ref>\\w+)\\s+.*' + branch + '.*$';
-  return (await getGitHead()) === (await getGitRemoteHead()).match(new RegExp(exp, 'm'))[1];
+  const remoteHead = (await getGitRemoteHead()).match(new RegExp(exp, 'm'))?.[1];
+  if (!remoteHead) {
+    return false;
+  }
+  return (await getGitHead()) === remoteHead;
 }
 
 /**
@@ -231,13 +235,12 @@ async function getBranchHeadDetached(): Promise<string> {
     warn(error);
   }
 
-  if (res?.branch) return res.branch;
-
   let branchName = await runCMD('git show -s --pretty=%d HEAD');
   // try with previous commit if branch not found
   if (!branchName) branchName = await runCMD('git show -s --pretty=%d HEAD~1');
+  if (branchName) return branchName;
 
-  return branchName;
+  return res?.branch;
 }
 
 async function getReachableSemverTags(options: SemverTagOptions): Promise<string[]> {

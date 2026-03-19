@@ -1,6 +1,6 @@
 import { gitTagVersion, gitCommitFile } from '../test/git-utils';
 import { getChannel, nextVersion } from './next-version';
-import { Config, getConfig } from '../config';
+import { configFileAccess, Config, getConfig } from '../config';
 import { createWorkspace, generateLibrary } from '../test/nx-utils';
 import { NextVersionOptions, VersionResult } from '../models';
 import { readFile as _readFile } from 'fs';
@@ -13,6 +13,7 @@ let workspacePath;
 // These tests use a temporary Nx workspace and should not inherit the outer CI PR state.
 beforeEach(() => {
   jest.spyOn(gitHelpers, 'isPr').mockReturnValue(false);
+  jest.spyOn(configFileAccess, 'fileExists').mockReturnValue(false);
 });
 
 describe('nextVersion in main, for nx workspace', () => {
