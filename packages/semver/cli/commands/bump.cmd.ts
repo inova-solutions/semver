@@ -10,7 +10,7 @@ import {
   getChannel,
   BaseContext,
 } from '../../lib';
-import { debug } from '../../lib/logger';
+import { debug, warn } from '../../lib/logger';
 import { addOptions as addNextVersionOptions } from './next-version.cmd';
 
 /**
@@ -21,13 +21,18 @@ export function addBumpCmd(program: Command) {
   const bumpCmd = program
     .command('bump')
     .description('Creates the pending release. Adds the next version tags to git')
-    .option('--skipChoreCommit', 'Skip the chore commit with version update. Only the git tags will be created.');
+    .option('--skipChoreCommit', 'Skip the chore commit with version update. Only the git tags will be created.')
+    .option('--dry-run', 'Run the release flow without changing files, commits, pushes or git tags.');
 
   addNextVersionOptions(bumpCmd).action(handleCommand);
 }
 
 async function handleCommand(options: BumpOptions) {
   const isOutputJson = options.output === 'json';
+  if (options.dryRun && !isOutputJson) {
+    warn('dry-run mode enabled');
+  }
+
   const config = await getConfig();
   const channel = await getChannel(config);
   const currentBranch = await getCurrentBranch();

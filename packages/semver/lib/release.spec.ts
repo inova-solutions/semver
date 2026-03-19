@@ -5,7 +5,7 @@ import { getChannel, nextVersion } from './next-version/next-version';
 import { getBranchRelatedTags, getCurrentBranch } from './git-helpers';
 import * as logger from './logger';
 import * as gitHelpers from './git-helpers';
-import { readFile } from 'fs';
+import { existsSync, readFile, writeFileSync } from 'fs';
 import { join } from 'path';
 import { BaseContext, BumpOptions } from './models';
 
@@ -140,6 +140,48 @@ describe('release', () => {
     const packageJson = await readPackageJson(join(cwd, 'package.json'));
     expect(packageJson.version).toEqual('1.0.0-beta.1');
     expect(head).toEqual(headAfterRelease);
+  });
+
+  it('dryRun does not write files, commits or tags', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommitFile('package.json', 'fix: deps', { cwd }, '{"version": "1.0.0-beta.1"}');
+    await push({ cwd });
+    const head = await getLastCommit({ cwd });
+    const outputPath = join(cwd, 'out.json');
+
+    // act
+    await testRelease(cwd, config, { dryRun: true, outputFile: 'out.json' });
+
+    // assert
+    const headAfterRelease = await getLastCommit({ cwd });
+    const packageJson = await readPackageJson(join(cwd, 'package.json'));
+    const gitTagsAfterRelease = await getGitTags(cwd);
+    expect(packageJson.version).toEqual('1.0.0-beta.1');
+    expect(head).toEqual(headAfterRelease);
+    expect(gitTagsAfterRelease).not.toContain('1.0.0-beta.2');
+    expect(existsSync(outputPath)).toBeFalsy();
+  });
+
+  it('dryRun keeps outputFile when branch is not up to date', async () => {
+    // arrange
+    const config = await getConfig();
+
+    const { cwd } = await gitRepo(true);
+    await gitCommits(['feat: a feat for version 1'], { cwd });
+    await gitTagVersion('1.0.0-beta.1', undefined, { cwd });
+    await gitCommits(['feat: a new feature'], { cwd });
+    writeFileSync(join(cwd, 'out.json'), '{"existing":true}', { encoding: 'utf-8' });
+
+    // act
+    await testRelease(cwd, config, { dryRun: true, outputFile: 'out.json' });
+
+    // assert
+    expect(existsSync(join(cwd, 'out.json'))).toBeTruthy();
   });
 });
 

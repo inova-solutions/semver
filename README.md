@@ -18,7 +18,9 @@ This repository keeps separate `package-lock.json` files for the root workspace 
 
 Do not run `npm run bump` unless you intentionally want to trigger side effects on the real repository.
 
-The `bump` command is not a dry run. It can update `package.json`, create commits, create git tags, and push changes to the remote repository. Use `npm run next-version` or `npm run last-version` when you only want to inspect version information.
+The `bump` command performs real release side effects by default. It can update `package.json`, create commits, create git tags, and push changes to the remote repository.
+
+Use `npm run bump -- --dry-run` when you want to execute the full read path without changing files or git state. In dry-run mode, write operations are replaced by informational logs. Use `npm run next-version` or `npm run last-version` when you only want to inspect version information.
 
 ## @inova/semver
 

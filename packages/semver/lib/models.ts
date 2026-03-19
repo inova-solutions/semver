@@ -30,6 +30,7 @@ export interface NextVersionOptions extends Omit<LastVersionOptions, 'channel'> 
   tagPrefix?: string;
   path?: string;
   bump?: ReleaseType;
+  dryRun?: boolean;
 }
 
 export interface VersionResult {

@@ -56,3 +56,15 @@ Default: `ci`, `repo`, `docs`, `test`, `chore`, `refactor`, `build`.
 To show the commands list you can run `npx semver --help` or just `semver --help` if you installed @inova/semver globally.
 
 To see what options the command support run `semver [command] -h` eg. `semver bump -h`.
+
+### `bump`
+
+`semver bump` creates the pending release and applies the release side effects.
+
+For a safe preview of the release flow, use:
+
+```bash
+semver bump --dry-run
+```
+
+Dry-run mode still performs the read operations required to calculate the release, but it does not modify files, create commits, push changes, or create git tags. Instead, those write operations are reported as informational logs, and the command starts with a warning that dry-run mode is enabled.

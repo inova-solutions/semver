@@ -77,7 +77,11 @@ export async function nextVersion(context: BaseContext, options: NextVersionOpti
   context.versions = [...packageTags];
 
   if (options.outputFile) {
-    await writeFile(JSON.stringify(packageTags, undefined, 2), options.outputFile);
+    if (options.dryRun) {
+      info(!isOutputJson, `would write next version output to ${chalk.bold(options.outputFile)}`);
+    } else {
+      await writeFile(JSON.stringify(packageTags, undefined, 2), options.outputFile);
+    }
   }
 
   return context;

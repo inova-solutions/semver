@@ -1,6 +1,6 @@
 import { valid as validSemver } from 'semver';
 import { existsSync, readFile, writeFile, rm } from 'fs';
-import { debug, warn } from './logger';
+import { debug, info, warn } from './logger';
 import { nxAffectedProjects } from './next-version/nx-helpers';
 import { addGitTag, commit, isBranchUpToDate, push } from './git-helpers';
 import { BaseContext, BumpOptions, ProjectType, VersionResult } from './models';
@@ -23,13 +23,22 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
     } else {
       warn(ctx.warning);
     }
-    await cleanOutput(options.outputFile);
+    await cleanOutput(options.outputFile, options.dryRun, isOutputJson);
     return null;
   }
 
-  debug(options.debug, 'Start with bump...');
+  if (options.dryRun) {
+    info(!isOutputJson, 'would start with bump...');
+  } else {
+    debug(options.debug, 'Start with bump...');
+  }
+
   // set the commits author and commiter info and prevent the `git` CLI to prompt for username/password
-  setGitAuthor();
+  if (options.dryRun) {
+    info(!isOutputJson, 'would configure git author for release commit');
+  } else {
+    setGitAuthor();
+  }
 
   let hasChanges = false;
   const mainVersion = getMainVersion(ctx.versions);
@@ -37,32 +46,49 @@ export async function release(ctx: BaseContext, options: BumpOptions): Promise<B
   if (existsSync('package.json') && !options.skipChoreCommit) {
     const packageJson = await readPackageJson('package.json');
     packageJson.version = mainVersion.version;
-    await updatePackageJson(packageJson, 'package.json');
+    if (options.dryRun) {
+      info(!isOutputJson, 'would update package.json');
+    } else {
+      await updatePackageJson(packageJson, 'package.json');
+      debug(options.debug, 'package.json was updated');
+    }
     hasChanges = true;
-    debug(options.debug, 'package.json was updated');
   }
 
   // bump version in nx projects if package.json exists
   if (options.workspace === 'nx') {
     await bumpNxProjects(
       ctx.versions.filter((nextVersion) => nextVersion.project),
-      options.projectType
+      options.projectType,
+      options.dryRun,
+      isOutputJson
     );
     hasChanges = true;
   }
 
   if (hasChanges && !options.skipChoreCommit) {
-    commit(
-      `chore(release): ${mainVersion.tag}
+    if (options.dryRun) {
+      info(!isOutputJson, `would create release commit chore(release): ${mainVersion.tag}`);
+      info(!isOutputJson, 'would push release commit');
+    } else {
+      commit(
+        `chore(release): ${mainVersion.tag}
 [skip ci]
     `,
-      isOutputJson ? 'ignore' : undefined
-    );
-    await push(isOutputJson ? 'ignore' : undefined);
+        isOutputJson ? 'ignore' : undefined
+      );
+      await push(isOutputJson ? 'ignore' : undefined);
+    }
   }
 
   // add git tags
-  ctx.versions.forEach((nextVersion) => addGitTag(nextVersion.tag, 'HEAD', isOutputJson ? 'ignore' : undefined));
+  ctx.versions.forEach((nextVersion) => {
+    if (options.dryRun) {
+      info(!isOutputJson, `would add git tag ${nextVersion.tag} on HEAD`);
+    } else {
+      addGitTag(nextVersion.tag, 'HEAD', isOutputJson ? 'ignore' : undefined);
+    }
+  });
 
   return ctx;
 }
@@ -71,7 +97,12 @@ function getMainVersion(nextVersions: VersionResult[]) {
   return nextVersions.filter((result) => !result.project).filter((tag) => validSemver(tag.version))[0];
 }
 
-async function bumpNxProjects(nextVersions: VersionResult[], projectType: ProjectType) {
+async function bumpNxProjects(
+  nextVersions: VersionResult[],
+  projectType: ProjectType,
+  dryRun = false,
+  isOutputJson = false
+) {
   const allProjects = await nxAffectedProjects(undefined, projectType);
 
   await Promise.all(
@@ -85,7 +116,11 @@ async function bumpNxProjects(nextVersions: VersionResult[], projectType: Projec
             .map(async (packageJsonPath) => {
               const packageJson = await readPackageJson(packageJsonPath);
               packageJson.version = tag.version;
-              await updatePackageJson(packageJson, packageJsonPath);
+              if (dryRun) {
+                info(!isOutputJson, `would update ${packageJsonPath}`);
+              } else {
+                await updatePackageJson(packageJson, packageJsonPath);
+              }
             })
         );
       }
@@ -140,10 +175,17 @@ function setGitAuthor() {
   process.env.GIT_COMMITTER_EMAIL = email;
 }
 
-async function cleanOutput(outputFile: string) {
+async function cleanOutput(outputFile: string, dryRun = false, isOutputJson = false) {
   return new Promise<void>((resolve, reject) => {
     if (outputFile && existsSync(outputFile)) {
+      if (dryRun) {
+        info(!isOutputJson, `would remove ${outputFile}`);
+        resolve();
+        return;
+      }
+
       rm(outputFile, (error) => (error ? reject(error) : resolve()));
+      return;
     }
     resolve();
   });
